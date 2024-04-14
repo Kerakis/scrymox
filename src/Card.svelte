@@ -1,17 +1,41 @@
 <script>
-  import { onMount, onDestroy } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import device from 'svelte-device-info';
   import ImageModal from './ImageModal.svelte';
   export let card;
-  let cardImageFront;
-  let cardImageBack;
-  let finishModal = false;
-  let showImageModal = false;
-  let selectedImages = null;
+  export let displayMode = 'full';
+  export let finishMode = 'symbol';
   export let alter = false;
   export let proxy = false;
   export let price = '';
-  card.selectedFinish = '';
+  let cardImageFront;
+  let cardImageBack;
+  let cardImageFrontSrc = '';
+  let cardImageBackSrc = '';
+  let finishModal = false;
+  let showImageModal = false;
+  let selectedImages = null;
+
+  const dispatch = createEventDispatcher();
+
+  const handleMouseOver = () => {
+    if (!device.isMobile) {
+      // Not a mobile device
+      if (Array.isArray(card.image_uris)) {
+        // If the card has multiple faces, use the images of all faces
+        cardImageFrontSrc = card.image_uris[0]?.border_crop;
+        cardImageBackSrc = card.image_uris[1]?.border_crop;
+      } else {
+        cardImageFrontSrc = card.image_uris?.border_crop;
+      }
+      if (cardImageFront) {
+        cardImageFront.classList.remove('hidden');
+      }
+      if (cardImageBack) {
+        cardImageBack.classList.remove('hidden');
+      }
+    }
+  };
 
   const handleCtrlClick = (event) => {
     if (device.isMobile) {
@@ -36,8 +60,10 @@
         } else if (card.finishes.includes('etched')) {
           card.selectedFinish = '*E*';
         }
+        dispatch('update', card);
       } else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
         card.selectedFinish = '';
+        dispatch('update', card);
       } else {
         if (event.shiftKey) {
           if (card.count > 1) {
@@ -84,35 +110,55 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-  <span
-    on:click|preventDefault={handleCtrlClick}
-    on:mouseover={() => {
-      if (!device.isMobile) {
-        // Not a mobile device
-        if (cardImageFront) {
-          cardImageFront.classList.remove('hidden');
+  {#if displayMode === 'full'}
+    <span
+      on:click|preventDefault={handleCtrlClick}
+      on:mouseover={handleMouseOver}
+      on:mouseout={() => {
+        if (!device.isMobile) {
+          // Not a mobile device
+          if (cardImageFront) {
+            cardImageFront.classList.add('hidden');
+          }
+          if (cardImageBack) {
+            cardImageBack.classList.add('hidden');
+          }
         }
-        if (cardImageBack) {
-          cardImageBack.classList.remove('hidden');
-        }
-      }
-    }}
-    on:mouseout={() => {
-      if (!device.isMobile) {
-        // Not a mobile device
-        if (cardImageFront) {
-          cardImageFront.classList.add('hidden');
-        }
-        if (cardImageBack) {
-          cardImageBack.classList.add('hidden');
-        }
-      }
-    }}
-  >
-    {card.count}
-    {card.name} ({card.set}) {card.collector_number}
-    {card.selectedFinish}
-  </span>
+      }}
+    >
+      {card.count}
+      {card.name} ({card.set}) {card.collector_number}
+      {card.selectedFinish === '*F*'
+        ? '*F*'
+        : card.selectedFinish === '*E*'
+          ? '*E*'
+          : ''}
+    </span>
+  {:else if displayMode === 'name'}
+    <div class="flex items-center">
+      <div class="flex-1 min-w-0">
+        <span
+          class="text-gray-200"
+          on:click|preventDefault={handleCtrlClick}
+          on:mouseover={handleMouseOver}
+          on:mouseout={() => {
+            if (!device.isMobile) {
+              // Not a mobile device
+              if (cardImageFront) {
+                cardImageFront.classList.add('hidden');
+              }
+              if (cardImageBack) {
+                cardImageBack.classList.add('hidden');
+              }
+            }
+          }}
+        >
+          {card.name}
+        </span>
+      </div>
+    </div>
+  {/if}
+
   {#if finishModal}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -148,7 +194,7 @@
     {#if card.image_uris[0] && card.image_uris[0].border_crop}
       <img
         bind:this={cardImageFront}
-        src={card.image_uris[0].border_crop}
+        src={cardImageFrontSrc}
         alt={`${card.name} front`}
         class="rounded hidden fixed max-w-[250px] z-50"
       />
@@ -156,7 +202,7 @@
     {#if card.image_uris.length > 1 && card.image_uris[1] && card.image_uris[1].border_crop}
       <img
         bind:this={cardImageBack}
-        src={card.image_uris[1].border_crop}
+        src={cardImageBackSrc}
         alt={`${card.name} back`}
         class="rounded hidden fixed max-w-[250px] z-50"
       />
@@ -164,7 +210,7 @@
   {:else if card.image_uris && card.image_uris.border_crop}
     <img
       bind:this={cardImageFront}
-      src={card.image_uris.border_crop}
+      src={cardImageFrontSrc}
       alt={card.name}
       class="rounded hidden fixed max-w-[250px] z-50"
     />

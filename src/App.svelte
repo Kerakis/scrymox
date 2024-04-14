@@ -12,6 +12,7 @@
   let downloadLink = '';
   let optionsModal = false;
   let tipsModal = false;
+  let isLoading = false;
   let searchError = '';
   let downloadButtonText = 'Download';
   let copyButtonText = 'Copy';
@@ -40,6 +41,8 @@
   });
 
   const fetchCards = async (url) => {
+    searchError = ''; // Clear the error message
+
     const response = await fetch(url);
     const data = await response.json();
 
@@ -117,6 +120,8 @@
     totalCards = data.total_cards;
     if (data.has_more) {
       setTimeout(() => fetchCards(data.next_page), 100);
+    } else {
+      isLoading = false;
     }
   };
 
@@ -132,6 +137,7 @@
     const encodedQuery = encodeURIComponent(query + ' ' + defaultQueryOptions);
     const url = `https://api.scryfall.com/cards/search?q=${encodedQuery}`;
     cards = [];
+    isLoading = true;
     fetchCards(url);
   };
 
@@ -261,6 +267,11 @@
               </div>
             {/if}
           </div>
+          <div class="mt-5">
+            {#if isLoading}
+              <p class="mt-4 text-center text-gray-200">Loading...</p>
+            {/if}
+          </div>
           <form on:submit={search} class="mt-8">
             <!-- svelte-ignore a11y-autofocus -->
             <input
@@ -335,17 +346,29 @@
               CSV
             </button>
           </div>
-          {#if selectedTab === 'Bulk Edit'}
-            <BulkEdit
-              {cards}
-              {copyToClipboard}
-              {isCopyButtonDisabled}
-              {copyButtonText}
-              {download}
-              {downloadButtonText}
-            />
-          {:else if selectedTab === 'CSV'}
-            <CSV {cards} />
+          {#if !isLoading && cards.length > 0}
+            {#if selectedTab === 'Bulk Edit'}
+              <BulkEdit
+                {cards}
+                {copyToClipboard}
+                {isCopyButtonDisabled}
+                {copyButtonText}
+                {download}
+                {downloadButtonText}
+                on:update={({ detail }) =>
+                  (cards = cards.map((card) =>
+                    card.id === detail.id ? detail : card
+                  ))}
+              />
+            {:else if selectedTab === 'CSV'}
+              <CSV
+                {cards}
+                on:update={({ detail }) =>
+                  (cards = cards.map((card) =>
+                    card.id === detail.id ? detail : card
+                  ))}
+              />
+            {/if}
           {/if}
         </div>
       </div>
