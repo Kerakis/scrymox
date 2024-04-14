@@ -6,6 +6,7 @@ Quickly transform a Scryfall query into an importable list of cards for Moxfield
 
 - Visit https://scrymox.kerakis.online and input a Scryfall search query.
 - You can also set a default search query, such as `not:digital`, using the Default Query Options which will be saved across sessions.
+- Copy and paste the results into your deck using the Bulk Editor on Moxfield, or you can download the text file and import it on Moxfield.
 
 ## Tips
 

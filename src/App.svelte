@@ -141,7 +141,7 @@
       class="absolute inset-0 bg-gradient-to-r from-purple-400 to-light-purple-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"
     ></div>
     <div
-      class="relative px-4 py-10 bg-slate-800 shadow-lg sm:rounded-3xl sm:p-20"
+      class="relative px-4 py-10 bg-indigo-900 shadow-lg sm:rounded-3xl sm:p-20"
     >
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="max-w-md mx-auto">
@@ -158,11 +158,16 @@
             on:click={() => (tipsModal = false)}
           >
             <div
-              class="bg-slate-800 sm:w-4/5 md:w-96 bg-opacity-75 rounded-lg p-4"
+              class="bg-indigo-800 text-gray-200 sm:w-4/5 md:w-96 bg-opacity-90 rounded-lg p-4"
               on:click|stopPropagation
             >
-              <h2 class="text-lg text-gray-200 font-semibold mb-2">Tips</h2>
-              <ul class="text-gray-200">
+              <h2 class="text-lg font-semibold mb-2">Tips</h2>
+              <p class="mb-2">
+                Copy and paste the results into your deck using the Bulk Editor
+                on Moxfield, or you can download the text file and import it on
+                Moxfield.
+              </p>
+              <ul>
                 <li class="mb-2">
                   Click on each card to increase the count by one.
                 </li>
@@ -224,7 +229,7 @@
             on:click={() => (optionsModal = false)}
           >
             <div
-              class="bg-slate-800 sm:w-4/5 md:w-96 bg-opacity-50 rounded-lg p-4"
+              class="bg-indigo-800 sm:w-4/5 md:w-96 bg-opacity-90 rounded-lg p-4"
               on:click|stopPropagation
             >
               <h2 class="text-lg text-gray-200 font-semibold mb-2">
@@ -281,7 +286,9 @@
       </div>
     </div>
   </div>
-  <footer class="text-sm text-gray-200 fixed m-1 bottom-0 right-1">
+  <footer
+    class="flex-shrink-0 mt-8 text-sm text-gray-200 text-center lg:fixed lg:m-1 lg:bottom-0 lg:right-1"
+  >
     <p>
       Made with <span class="font-sans">&#9749;</span> by
       <a
