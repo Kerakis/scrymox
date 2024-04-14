@@ -1,8 +1,11 @@
 <script>
   import Card from './Card.svelte';
   import { onMount, onDestroy } from 'svelte';
+  import BulkEdit from './BulkEdit.svelte';
+  import CSV from './CSV.svelte';
 
   let query = '';
+  let selectedTab = localStorage.getItem('selectedTab') || 'Bulk Edit';
   let defaultQueryOptions = localStorage.getItem('defaultQueryOptions') || '';
   let cards = [];
   let totalCards = 0;
@@ -16,6 +19,10 @@
 
   // Current year
   const year = new Date().getFullYear();
+
+  const saveSelectedTab = () => {
+    localStorage.setItem('selectedTab', selectedTab);
+  };
 
   const handleEscape = (event) => {
     if (event.key === 'Escape') {
@@ -60,6 +67,11 @@
             finishes: card.finishes,
             selectedFinish: card.selectedFinish,
             count: 1,
+            condition: 'NM',
+            language: 'EN',
+            alter: false,
+            proxy: false,
+            price: card.prices.usd,
           };
         } else if (card.layout !== 'split' && card.layout !== 'flip') {
           return {
@@ -74,6 +86,11 @@
             finishes: card.finishes,
             selectedFinish: card.selectedFinish,
             count: 1,
+            condition: 'NM',
+            language: 'EN',
+            alter: false,
+            proxy: false,
+            price: card.prices.usd,
           };
         } else {
           return {
@@ -87,6 +104,11 @@
             finishes: card.finishes,
             selectedFinish: card.selectedFinish,
             count: 1,
+            condition: 'NM',
+            language: 'EN',
+            alter: false,
+            proxy: false,
+            price: card.prices.usd,
           };
         }
       }),
@@ -127,13 +149,6 @@
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     downloadLink = URL.createObjectURL(blob);
   }
-
-  // const download = () => {
-  //   const a = document.createElement('a');
-  //   a.href = downloadLink;
-  //   a.download = 'cards.txt';
-  //   a.click();
-  // };
 
   const originalDownload = () => {
     const a = document.createElement('a');
@@ -181,161 +196,173 @@
 <div
   class="min-h-screen bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-700 py-6 flex flex-col justify-center sm:py-12"
 >
-  <div class="relative py-3 sm:max-w-xl sm:mx-auto">
-    <div
-      class="absolute inset-0 bg-gradient-to-r from-purple-400 to-light-purple-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"
-    ></div>
-    <div
-      class="relative px-4 py-10 bg-indigo-900 shadow-lg sm:rounded-3xl sm:p-20"
-    >
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="max-w-md mx-auto">
-        <button
-          on:click={() => (tipsModal = true)}
-          class="absolute top-0 right-0 mt-4 mr-4 w-8 h-8 font-serif flex items-center justify-center border border-transparent shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full"
-        >
-          i
-        </button>
-        {#if tipsModal}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-            on:click={() => (tipsModal = false)}
+  <div class="max-w-7xl mx-auto">
+    <div class="relative py-3 mx-auto">
+      <div
+        class="absolute inset-0 bg-gradient-to-r from-purple-400 to-light-purple-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"
+      ></div>
+      <div
+        class="relative px-4 py-10 bg-indigo-900 shadow-lg sm:rounded-3xl sm:p-20"
+      >
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="mx-auto">
+          <button
+            on:click={() => (tipsModal = true)}
+            class="absolute top-0 right-0 mt-4 mr-4 w-8 h-8 font-serif flex items-center justify-center border border-transparent shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full"
           >
+            i
+          </button>
+          {#if tipsModal}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
-              class="bg-indigo-800 text-gray-200 sm:w-4/5 md:w-96 bg-opacity-90 rounded-lg p-4"
-              on:click|stopPropagation
+              class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+              on:click={() => (tipsModal = false)}
             >
-              <h2 class="text-lg font-semibold mb-2">Tips</h2>
-              <p class="mb-2">
-                Copy and paste the results into your deck using the Bulk Editor
-                on Moxfield, or you can download the text file and import it on
-                Moxfield.
-              </p>
-              <ul>
-                <li class="mb-2">
-                  Click on each card to increase the count by one.
-                </li>
-                <li class="mb-2">
-                  Hold Shift and click the card to decrease the count by one.
-                </li>
-                <li class="mb-2">
-                  Hold Ctrl and click a card to indicate that the card is foil
-                  or etched.
-                </li>
-                <li>
-                  Hold Shift and Ctrl and click a card to remove the foil
-                  status.
-                </li>
-              </ul>
-            </div>
-          </div>
-        {/if}
-        <div>
-          <h1 class="text-2xl text-gray-200 font-semibold">ScryMox</h1>
-          <p class="mt-2 text-gray-200">
-            Quickly transform a Scryfall query into an importable list of cards
-            for Moxfield.
-          </p>
-        </div>
-        <div class="text-red-500 mt-5">
-          {#if searchError}
-            <div class="">
-              {searchError}
+              <div
+                class="bg-indigo-800 text-gray-200 sm:w-4/5 md:w-96 bg-opacity-90 rounded-lg p-4"
+                on:click|stopPropagation
+              >
+                <h2 class="text-lg font-semibold mb-2">Tips</h2>
+                <p class="mb-2">
+                  Copy and paste the results into your deck using the Bulk
+                  Editor on Moxfield, or you can download the text file and
+                  import it on Moxfield.
+                </p>
+                <ul>
+                  <li class="mb-2">
+                    Click on each card to increase the count by one.
+                  </li>
+                  <li class="mb-2">
+                    Hold Shift and click the card to decrease the count by one.
+                  </li>
+                  <li class="mb-2">
+                    Hold Ctrl and click a card to indicate that the card is foil
+                    or etched.
+                  </li>
+                  <li>
+                    Hold Shift and Ctrl and click a card to remove the foil
+                    status.
+                  </li>
+                </ul>
+              </div>
             </div>
           {/if}
-        </div>
-        <form on:submit={search} class="mt-8">
-          <!-- svelte-ignore a11y-autofocus -->
-          <input
-            type="text"
-            autofocus
-            bind:value={query}
-            placeholder="Scryfall Syntax Query"
-            class="mt-1 pl-1.5 block w-full rounded-md text-gray-800 bg-gray-200 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
-          />
-          <button
-            type="submit"
-            class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >Search</button
-          >
-        </form>
-        <button
-          on:click={() => (optionsModal = true)}
-          class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Default Query Options
-        </button>
-        {#if optionsModal}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-            on:click={() => (optionsModal = false)}
-          >
-            <div
-              class="bg-indigo-800 sm:w-4/5 md:w-96 bg-opacity-90 rounded-lg p-4"
-              on:click|stopPropagation
-            >
-              <h2 class="text-lg text-gray-200 font-semibold mb-2">
-                Default Query Options
-              </h2>
-              <p class="text-gray-200">
-                Any additional queries listed here will be applied to all
-                searches
-              </p>
-              <input
-                type="text"
-                bind:value={defaultQueryOptions}
-                placeholder="Default Query Options"
-                on:blur={saveDefaultQueryOptions}
-                class="mt-4 pl-1.5 block w-full rounded-md text-gray-800 bg-gray-200 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
-              />
-            </div>
+          <div>
+            <h1 class="text-2xl text-gray-200 font-semibold">ScryMox</h1>
+            <p class="mt-2 text-gray-200">
+              Quickly transform a Scryfall query into an importable list of
+              cards for Moxfield.
+            </p>
           </div>
-        {/if}
-        {#if cards.length > 0}
-          <p class="mt-4 text-center text-gray-200">
-            Total cards: <span class="font-bold">{totalCards}</span>
-          </p>
-        {/if}
-        <div
-          class="cards text-gray-200 border border-gray-500 rounded-md mt-4 overflow-auto h-64"
-        >
-          {#each cards as card (card.id)}
-            <Card bind:card />
-          {/each}
+          <div class="text-red-500 mt-5">
+            {#if searchError}
+              <div class="">
+                {searchError}
+              </div>
+            {/if}
+          </div>
+          <form on:submit={search} class="mt-8">
+            <!-- svelte-ignore a11y-autofocus -->
+            <input
+              type="text"
+              autofocus
+              bind:value={query}
+              placeholder="Scryfall Syntax Query"
+              class="mt-1 pl-1.5 block w-full rounded-md text-gray-800 bg-gray-200 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+            <button
+              type="submit"
+              class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >Search</button
+            >
+          </form>
+          <button
+            on:click={() => (optionsModal = true)}
+            class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Default Query Options
+          </button>
+          {#if optionsModal}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div
+              class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+              on:click={() => (optionsModal = false)}
+            >
+              <div
+                class="bg-indigo-800 sm:w-4/5 md:w-96 bg-opacity-90 rounded-lg p-4"
+                on:click|stopPropagation
+              >
+                <h2 class="text-lg text-gray-200 font-semibold mb-2">
+                  Default Query Options
+                </h2>
+                <p class="text-gray-200">
+                  Any additional queries listed here will be applied to all
+                  searches
+                </p>
+                <input
+                  type="text"
+                  bind:value={defaultQueryOptions}
+                  placeholder="Default Query Options"
+                  on:blur={saveDefaultQueryOptions}
+                  class="mt-4 pl-1.5 block w-full rounded-md text-gray-800 bg-gray-200 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                />
+              </div>
+            </div>
+          {/if}
+          {#if cards.length > 0}
+            <p class="mt-4 text-center text-gray-200">
+              Total cards: <span class="font-bold">{totalCards}</span>
+            </p>
+          {/if}
+          <div class="mt-4 flex justify-center">
+            <button
+              on:click={() => {
+                selectedTab = 'Bulk Edit';
+                saveSelectedTab();
+              }}
+              class="px-4 py-2 text-gray-200 bg-indigo-600 hover:bg-indigo-700"
+            >
+              Bulk Edit
+            </button>
+            <button
+              on:click={() => {
+                selectedTab = 'CSV';
+                saveSelectedTab();
+              }}
+              class="px-4 py-2 text-gray-200 bg-indigo-600 hover:bg-indigo-700"
+            >
+              CSV
+            </button>
+          </div>
+          {#if selectedTab === 'Bulk Edit'}
+            <BulkEdit
+              {cards}
+              {copyToClipboard}
+              {isCopyButtonDisabled}
+              {copyButtonText}
+              {download}
+              {downloadButtonText}
+            />
+          {:else if selectedTab === 'CSV'}
+            <CSV {cards} />
+          {/if}
         </div>
-        {#if cards.length > 0}
-          <button
-            on:click={copyToClipboard}
-            disabled={isCopyButtonDisabled}
-            class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            {copyButtonText}
-          </button>
-          <button
-            on:click={download}
-            class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            {downloadButtonText}
-          </button>
-        {/if}
       </div>
     </div>
+    <footer
+      class="flex-shrink-0 mt-8 text-sm text-gray-200 text-center lg:fixed lg:m-1 lg:bottom-0 lg:right-1"
+    >
+      <p>
+        Made with <span class="font-sans">&#9749;</span> by
+        <a
+          href="https://github.com/Kerakis"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          &nbsp;Kerakis&nbsp;© {year}
+        </a>
+      </p>
+    </footer>
   </div>
-  <footer
-    class="flex-shrink-0 mt-8 text-sm text-gray-200 text-center lg:fixed lg:m-1 lg:bottom-0 lg:right-1"
-  >
-    <p>
-      Made with <span class="font-sans">&#9749;</span> by
-      <a
-        href="https://github.com/Kerakis"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        &nbsp;Kerakis&nbsp;© {year}
-      </a>
-    </p>
-  </footer>
 </div>

@@ -7,14 +7,22 @@
   let cardImageBack;
   let finishModal = false;
   let showImageModal = false;
-  let selectedImage = null;
+  let selectedImages = null;
+  export let alter = false;
+  export let proxy = false;
+  export let price = '';
   card.selectedFinish = '';
 
   const handleCtrlClick = (event) => {
     if (device.isMobile) {
       // Mobile device
+      if (Array.isArray(card.image_uris)) {
+        // If the card has multiple faces, use the images of all faces
+        selectedImages = card.image_uris.map((face) => face?.border_crop);
+      } else {
+        selectedImages = [card.image_uris?.border_crop];
+      }
       showImageModal = true;
-      selectedImage = card.image_uris.border_crop;
     } else {
       // Not a mobile device
       if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
@@ -165,6 +173,6 @@
 
 <ImageModal
   bind:show={showImageModal}
-  {selectedImage}
+  {selectedImages}
   on:close={() => (showImageModal = false)}
 />
