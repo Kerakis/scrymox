@@ -1,14 +1,21 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import device from 'svelte-device-info';
+  import ImageModal from './ImageModal.svelte';
   export let card;
   let cardImageFront;
   let cardImageBack;
   let finishModal = false;
+  let showImageModal = false;
+  let selectedImage = null;
   card.selectedFinish = '';
 
   const handleCtrlClick = (event) => {
-    if (!device.isMobile) {
+    if (device.isMobile) {
+      // Mobile device
+      showImageModal = true;
+      selectedImage = card.image_uris.border_crop;
+    } else {
       // Not a mobile device
       if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
         if (
@@ -155,3 +162,9 @@
     />
   {/if}
 </div>
+
+<ImageModal
+  bind:show={showImageModal}
+  {selectedImage}
+  on:close={() => (showImageModal = false)}
+/>

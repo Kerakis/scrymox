@@ -10,6 +10,9 @@
   let optionsModal = false;
   let tipsModal = false;
   let searchError = '';
+  let downloadButtonText = 'Download';
+  let copyButtonText = 'Copy';
+  let isCopyButtonDisabled = false;
 
   // Current year
   const year = new Date().getFullYear();
@@ -125,11 +128,53 @@
     downloadLink = URL.createObjectURL(blob);
   }
 
-  const download = () => {
+  // const download = () => {
+  //   const a = document.createElement('a');
+  //   a.href = downloadLink;
+  //   a.download = 'cards.txt';
+  //   a.click();
+  // };
+
+  const originalDownload = () => {
     const a = document.createElement('a');
     a.href = downloadLink;
     a.download = 'cards.txt';
     a.click();
+
+    downloadButtonText = 'Import into Moxfield';
+    download = () => {
+      const a = document.createElement('a');
+      a.href = 'https://www.moxfield.com/';
+      a.target = '_blank';
+      a.rel = 'noreferrer';
+      a.click();
+    };
+
+    setTimeout(() => {
+      downloadButtonText = 'Download';
+      download = originalDownload;
+    }, 5000);
+  };
+
+  let download = originalDownload;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(
+      cards
+        .map(
+          (card) =>
+            `${card.count} ${card.name} (${card.set}) ${card.collector_number} ${card.selectedFinish}`
+        )
+        .join('\n')
+    );
+
+    copyButtonText = 'Copied!';
+    isCopyButtonDisabled = true;
+
+    setTimeout(() => {
+      copyButtonText = 'Copy';
+      isCopyButtonDisabled = false;
+    }, 5000);
   };
 </script>
 
@@ -263,24 +308,17 @@
         </div>
         {#if cards.length > 0}
           <button
-            on:click={() =>
-              navigator.clipboard.writeText(
-                cards
-                  .map(
-                    (card) =>
-                      `${card.count} ${card.name} (${card.set}) ${card.collector_number} ${card.selectedFinish}`
-                  )
-                  .join('\n')
-              )}
+            on:click={copyToClipboard}
+            disabled={isCopyButtonDisabled}
             class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            Copy
+            {copyButtonText}
           </button>
           <button
             on:click={download}
             class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            Download
+            {downloadButtonText}
           </button>
         {/if}
       </div>
