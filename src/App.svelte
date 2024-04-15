@@ -40,6 +40,18 @@
     window.removeEventListener('keydown', handleEscape);
   });
 
+  const getDefaultFinish = (finishes) => {
+    if (finishes.includes('nonfoil')) {
+      return 'nonfoil';
+    } else if (finishes.includes('foil')) {
+      return 'foil';
+    } else if (finishes.includes('etched')) {
+      return 'etched';
+    } else {
+      return null;
+    }
+  };
+
   const fetchCards = async (url) => {
     searchError = ''; // Clear the error message
 
@@ -68,13 +80,13 @@
             image_uris: card.image_uris,
             name: card.name,
             finishes: card.finishes,
-            selectedFinish: card.selectedFinish,
+            selectedFinish: getDefaultFinish(card.finishes),
             count: 1,
             condition: 'NM',
             language: 'EN',
             alter: false,
             proxy: false,
-            price: card.prices.usd,
+            prices: card.prices,
           };
         } else if (card.layout !== 'split' && card.layout !== 'flip') {
           return {
@@ -87,13 +99,13 @@
             ],
             name: card.name,
             finishes: card.finishes,
-            selectedFinish: card.selectedFinish,
+            selectedFinish: getDefaultFinish(card.finishes),
             count: 1,
             condition: 'NM',
             language: 'EN',
             alter: false,
             proxy: false,
-            price: card.prices.usd,
+            prices: card.prices,
           };
         } else {
           return {
@@ -105,13 +117,13 @@
               : card.card_faces[0].image_uris,
             name: card.name,
             finishes: card.finishes,
-            selectedFinish: card.selectedFinish,
+            selectedFinish: getDefaultFinish(card.finishes),
             count: 1,
             condition: 'NM',
             language: 'EN',
             alter: false,
             proxy: false,
-            price: card.prices.usd,
+            prices: card.prices,
           };
         }
       }),
@@ -325,27 +337,34 @@
             <p class="mt-4 text-center text-gray-200">
               Total cards: <span class="font-bold">{totalCards}</span>
             </p>
+
+            <div class="mt-4 flex justify-center">
+              <button
+                on:click={() => {
+                  selectedTab = 'Bulk Edit';
+                  saveSelectedTab();
+                }}
+                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-l-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 {selectedTab ===
+                'Bulk Edit'
+                  ? 'bg-indigo-700'
+                  : 'bg-indigo-600'} hover:bg-indigo-700"
+              >
+                Bulk Edit
+              </button>
+              <button
+                on:click={() => {
+                  selectedTab = 'CSV';
+                  saveSelectedTab();
+                }}
+                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-r-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 {selectedTab ===
+                'CSV'
+                  ? 'bg-indigo-700'
+                  : 'bg-indigo-600'} hover:bg-indigo-700"
+              >
+                CSV
+              </button>
+            </div>
           {/if}
-          <div class="mt-4 flex justify-center">
-            <button
-              on:click={() => {
-                selectedTab = 'Bulk Edit';
-                saveSelectedTab();
-              }}
-              class="px-4 py-2 text-gray-200 bg-indigo-600 hover:bg-indigo-700"
-            >
-              Bulk Edit
-            </button>
-            <button
-              on:click={() => {
-                selectedTab = 'CSV';
-                saveSelectedTab();
-              }}
-              class="px-4 py-2 text-gray-200 bg-indigo-600 hover:bg-indigo-700"
-            >
-              CSV
-            </button>
-          </div>
           {#if !isLoading && cards.length > 0}
             {#if selectedTab === 'Bulk Edit'}
               <BulkEdit

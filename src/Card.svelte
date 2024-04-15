@@ -52,13 +52,18 @@
         ) {
           finishModal = true;
         } else if (card.finishes.includes('foil')) {
-          card.selectedFinish = '*F*';
+          card.selectedFinish = 'foil';
+          card.displayFinish = '*F*';
         } else if (card.finishes.includes('etched')) {
-          card.selectedFinish = '*E*';
+          card.selectedFinish = 'etched';
+          card.displayFinish = '*E*';
         }
         dispatch('update', card);
       } else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-        card.selectedFinish = '';
+        if (card.finishes.includes('nonfoil')) {
+          card.selectedFinish = 'nonfoil';
+          card.displayFinish = '';
+        }
         dispatch('update', card);
       } else {
         if (event.shiftKey) {
@@ -124,9 +129,9 @@
     >
       {card.count}
       {card.name} ({card.set}) {card.collector_number}
-      {card.selectedFinish === '*F*'
+      {card.displayFinish === '*F*'
         ? '*F*'
-        : card.selectedFinish === '*E*'
+        : card.displayFinish === '*E*'
           ? '*E*'
           : ''}
     </span>
@@ -169,7 +174,8 @@
         <h2 class="text-lg font-semibold mb-2">{card.name}</h2>
         <button
           on:click={() => {
-            card.selectedFinish = '*F*';
+            card.displayFinish = '*F*';
+            card.selectedFinish = 'foil';
             finishModal = false;
           }}
           class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -177,7 +183,8 @@
         >
         <button
           on:click={() => {
-            card.selectedFinish = '*E*';
+            card.displayFinish = '*E*';
+            card.selectedFinish = 'etched';
             finishModal = false;
           }}
           class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

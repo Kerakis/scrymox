@@ -7,6 +7,9 @@
   const dispatch = createEventDispatcher();
   let languageDropdown;
   let conditionDropdown;
+  let alterDropdown;
+  let proxyDropdown;
+  let priceDropdown;
 
   $: {
     if (cards.length > 0 && languageDropdown) {
@@ -14,6 +17,15 @@
     }
     if (cards.length > 0 && conditionDropdown) {
       conditionDropdown.value = '';
+    }
+    if (cards.length > 0 && alterDropdown) {
+      alterDropdown.value = '';
+    }
+    if (cards.length > 0 && proxyDropdown) {
+      proxyDropdown.value = '';
+    }
+    if (cards.length > 0 && priceDropdown) {
+      priceDropdown.value = '';
     }
   }
 
@@ -76,6 +88,44 @@
     dispatch('update', cards);
   };
 
+  const changeAllProxies = (event) => {
+    let updatedCards = [...cards];
+    updatedCards.forEach((card) => {
+      card.proxy = event.target.value === 'TRUE';
+    });
+    cards = updatedCards;
+    dispatch('update', cards);
+  };
+
+  const changeAllAlters = (event) => {
+    let updatedCards = [...cards];
+    updatedCards.forEach((card) => {
+      card.alter = event.target.value === 'TRUE';
+    });
+    cards = updatedCards;
+    dispatch('update', cards);
+  };
+
+  const changeAllPrices = (event) => {
+    let updatedCards = [...cards];
+    updatedCards.forEach((card) => {
+      card.prices = event.target.value === 'Ignore Prices' ? '' : card.prices;
+    });
+    cards = updatedCards;
+    dispatch('update', cards);
+  };
+
+  const updatePrice = (index, event) => {
+    if (cards[index].selectedFinish === 'foil') {
+      cards[index].prices.usd_foil = event.target.value;
+    } else if (cards[index].selectedFinish === 'etched') {
+      cards[index].prices.usd_etched = event.target.value;
+    } else {
+      cards[index].prices.usd = event.target.value;
+    }
+    dispatch('update', cards);
+  };
+
   const toggleStatus = (index, field) => {
     let updatedCards = [...cards];
     updatedCards[index][field] = !updatedCards[index][field];
@@ -99,7 +149,7 @@
     const csvRows = cards.map((card, index) =>
       [
         card.count,
-        card.name,
+        `"${card.name}"`,
         card.set,
         card.condition,
         card.language,
@@ -107,7 +157,11 @@
         card.collector_number,
         card.alter,
         card.proxy,
-        card.price,
+        card.selectedFinish === 'foil'
+          ? card.prices.usd_foil
+          : card.selectedFinish === 'etched'
+            ? card.prices.usd_etched
+            : card.prices.usd,
       ].join(',')
     );
     const csvString = [headers.join(','), ...csvRows].join('\n');
@@ -155,9 +209,38 @@
         </th>
         <th class="px-2 text-center">Foil</th>
         <th class="px-2 text-center">Collector Number</th>
-        <th class="px-2 text-center">Alter</th>
-        <th class="px-2 text-center">Proxy</th>
-        <th class="px-2 text-center">Purchase Price</th>
+        <th class="px-2 text-center">
+          <select
+            bind:this={alterDropdown}
+            class="appearance-none outline-none bg-indigo-900"
+            on:change={changeAllAlters}
+          >
+            <option value="" selected disabled>Alter</option>
+            <option value="TRUE">TRUE</option>
+            <option value="FALSE">FALSE</option>
+          </select>
+        </th>
+        <th class="px-2 text-center">
+          <select
+            bind:this={proxyDropdown}
+            class="appearance-none outline-none bg-indigo-900"
+            on:change={changeAllProxies}
+          >
+            <option value="" selected disabled>Proxy</option>
+            <option value="TRUE">TRUE</option>
+            <option value="FALSE">FALSE</option>
+          </select>
+        </th>
+        <th class="px-2 text-center">
+          <select
+            class="appearance-none outline-none bg-indigo-900"
+            on:change={changeAllPrices}
+          >
+            <option value="" selected disabled>Purchase Price</option>
+            <option value="Use Current Prices">Use Current Prices</option>
+            <option value="Ignore Prices">Ignore Prices</option>
+          </select>
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -201,11 +284,15 @@
             </select>
           </td>
           <td class="px-2 text-center">
-            {card.selectedFinish === '*F*'
-              ? 'foil'
-              : card.selectedFinish === '*E*'
-                ? 'etched'
-                : ''}
+            {#if card.selectedFinish === 'foil'}
+              Foil
+            {:else if card.selectedFinish === 'etched'}
+              Etched
+            {:else if card.selectedFinish === 'nonfoil'}
+              Nonfoil
+            {:else}
+              Not Available
+            {/if}
           </td>
           <td class="px-2 text-center">{card.collector_number}</td>
           <td
@@ -216,7 +303,14 @@
             class="px-2 text-center uppercase cursor-pointer"
             on:click={() => toggleStatus(index, 'proxy')}>{card.proxy}</td
           >
-          <td class="px-2 text-center">{card.price}</td>
+          <!-- <td class="px-2 text-center">
+            <input
+              type="number"
+              class="appearance-none outline-none bg-indigo-900"
+              bind:value={card.prices}
+              on:input={(event) => updatePrice(index, event)}
+            />
+          </td> -->
         </tr>
       {/each}
     </tbody>
