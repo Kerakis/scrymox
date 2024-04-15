@@ -4,31 +4,44 @@
   export let cards = [];
   const dispatch = createEventDispatcher();
   let languageDropdown;
+  let conditionDropdown;
 
   $: {
     if (cards.length > 0 && languageDropdown) {
       languageDropdown.value = '';
     }
+    if (cards.length > 0 && conditionDropdown) {
+      conditionDropdown.value = '';
+    }
   }
 
   const languages = {
-    en: 'English',
-    es: 'Spanish',
-    fr: 'French',
-    de: 'German',
-    it: 'Italian',
-    pt: 'Portuguese',
-    ja: 'Japanese',
-    ko: 'Korean',
-    ru: 'Russian',
-    zhs: 'Simplified Chinese',
-    zht: 'Traditional Chinese',
-    he: 'Hebrew',
-    la: 'Latin',
-    grc: 'Ancient Greek',
-    ar: 'Arabic',
-    sa: 'Sanskrit',
-    ph: 'Phyrexian',
+    EN: 'English',
+    ES: 'Spanish',
+    FR: 'French',
+    DE: 'German',
+    IT: 'Italian',
+    PT: 'Portuguese',
+    JA: 'Japanese',
+    KO: 'Korean',
+    RU: 'Russian',
+    ZHS: 'Simplified Chinese',
+    ZHT: 'Traditional Chinese',
+    HE: 'Hebrew',
+    LA: 'Latin',
+    GRC: 'Ancient Greek',
+    AR: 'Arabic',
+    SA: 'Sanskrit',
+    PH: 'Phyrexian',
+  };
+
+  const conditions = {
+    M: 'Mint',
+    NM: 'Near Mint',
+    LP: 'Lightly Played',
+    MP: 'Played',
+    HP: 'Heavily Played',
+    DM: 'Damaged',
   };
 
   const updateCard = (index, field, value) => {
@@ -51,11 +64,56 @@
     dispatch('update', cards);
   };
 
+  const changeAllConditions = (event) => {
+    let updatedCards = [...cards];
+    updatedCards.forEach((card) => {
+      card.condition = event.target.value;
+    });
+    cards = updatedCards;
+    dispatch('update', cards);
+  };
+
   const toggleStatus = (index, field) => {
     let updatedCards = [...cards];
     updatedCards[index][field] = !updatedCards[index][field];
     cards = updatedCards;
     dispatch('update', cards);
+  };
+
+  const downloadCSV = () => {
+    const headers = [
+      'Count',
+      'Name',
+      'Edition',
+      'Condition',
+      'Language',
+      'Foil',
+      'Collector Number',
+      'Alter',
+      'Proxy',
+      'Purchase Price',
+    ];
+    const csvRows = cards.map((card, index) =>
+      [
+        card.count,
+        card.name,
+        card.set,
+        card.condition,
+        card.language,
+        card.selectedFinish,
+        card.collector_number,
+        card.alter,
+        card.proxy,
+        card.price,
+      ].join(',')
+    );
+    const csvString = [headers.join(','), ...csvRows].join('\n');
+    const csvBlob = new Blob([csvString], { type: 'text/csv' });
+    const csvUrl = URL.createObjectURL(csvBlob);
+    const link = document.createElement('a');
+    link.href = csvUrl;
+    link.download = 'cards.csv';
+    link.click();
   };
 </script>
 
@@ -68,7 +126,18 @@
         <th class="px-2 text-center">Count</th>
         <th class="px-2 text-center">Name</th>
         <th class="px-2 text-center">Edition</th>
-        <th class="px-2 text-center">Condition</th>
+        <th class="px-2 text-center">
+          <select
+            bind:this={conditionDropdown}
+            class="appearance-none outline-none bg-indigo-900"
+            on:change={changeAllConditions}
+          >
+            <option value="" selected disabled>Condition</option>
+            {#each Object.entries(conditions) as [code, condition]}
+              <option value={code}>{condition}</option>
+            {/each}
+          </select>
+        </th>
         <th class="px-2 text-center">
           <select
             bind:this={languageDropdown}
@@ -93,10 +162,9 @@
         <tr>
           <td class="px-2 text-center">
             <input
-              type="number"
-              min="1"
-              max="99"
-              class="appearance-none -webkit-appearance-textfield -webkit-outer-spin-button -webkit-inner-spin-button w-12 border-0 bg-transparent text-center outline-none text-gray-200"
+              type="text"
+              inputmode="numeric"
+              class="w-12 border-0 bg-transparent text-center outline-none text-gray-200"
               bind:value={card.count}
               on:input={(event) => updateCard(index, 'count', event)}
             />
@@ -105,7 +173,18 @@
             ><Card bind:card displayMode="name" /></td
           >
           <td class="px-2 text-center uppercase">{card.set}</td>
-          <td class="px-2 text-center uppercase">{card.condition}</td>
+          <td class="px-2 text-center">
+            <select
+              class="appearance-none outline-none bg-indigo-900"
+              bind:value={card.condition}
+              on:change={(event) =>
+                updateCard(index, 'condition', event.target.value)}
+            >
+              {#each Object.entries(conditions) as [code, condition]}
+                <option value={code}>{condition}</option>
+              {/each}
+            </select>
+          </td>
           <td class="px-2 text-center">
             <select
               class="appearance-none outline-none bg-indigo-900"
@@ -140,3 +219,9 @@
     </tbody>
   </table>
 </div>
+<button
+  on:click={downloadCSV}
+  class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+>
+  Download
+</button>
