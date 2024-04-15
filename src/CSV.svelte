@@ -1,4 +1,6 @@
 <script>
+  // @ts-nocheck
+
   import { createEventDispatcher } from 'svelte';
   import Card from './Card.svelte';
   export let cards = [];
@@ -47,6 +49,7 @@
   const updateCard = (index, field, value) => {
     let updatedCards = [...cards];
     if (value instanceof Event) {
+      // @ts-ignore
       updatedCards[index][field] = value.currentTarget.value;
     } else {
       updatedCards[index][field] = value;
@@ -170,7 +173,7 @@
             />
           </td>
           <td class="px-2 text-center underline"
-            ><Card bind:card displayMode="name" /></td
+            ><Card bind:card displayMode="CSV" /></td
           >
           <td class="px-2 text-center uppercase">{card.set}</td>
           <td class="px-2 text-center">

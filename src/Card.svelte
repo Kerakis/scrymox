@@ -3,11 +3,7 @@
   import device from 'svelte-device-info';
   import ImageModal from './ImageModal.svelte';
   export let card;
-  export let displayMode = 'full';
-  export let finishMode = 'symbol';
-  export let alter = false;
-  export let proxy = false;
-  export let price = '';
+  export let displayMode = 'bulkEdit';
   let cardImageFront;
   let cardImageBack;
   let cardImageFrontSrc = '';
@@ -110,7 +106,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-  {#if displayMode === 'full'}
+  {#if displayMode === 'bulkEdit'}
     <span
       on:click|preventDefault={handleCtrlClick}
       on:mouseover={handleMouseOver}
@@ -134,7 +130,7 @@
           ? '*E*'
           : ''}
     </span>
-  {:else if displayMode === 'name'}
+  {:else if displayMode === 'CSV'}
     <div class="flex items-center">
       <div class="flex-1 min-w-0">
         <span
