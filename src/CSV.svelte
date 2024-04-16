@@ -288,10 +288,8 @@
               Foil
             {:else if card.selectedFinish === 'etched'}
               Etched
-            {:else if card.selectedFinish === 'nonfoil'}
-              Nonfoil
             {:else}
-              Not Available
+              Nonfoil
             {/if}
           </td>
           <td class="px-2 text-center">{card.collector_number}</td>

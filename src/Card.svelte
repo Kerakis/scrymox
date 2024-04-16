@@ -61,7 +61,7 @@
         dispatch('update', card);
       } else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
         if (card.finishes.includes('nonfoil')) {
-          card.selectedFinish = 'nonfoil';
+          card.selectedFinish = '';
           card.displayFinish = '';
         }
         dispatch('update', card);

@@ -42,7 +42,7 @@
 
   const getDefaultFinish = (finishes) => {
     if (finishes.includes('nonfoil')) {
-      return 'nonfoil';
+      return '';
     } else if (finishes.includes('foil')) {
       return 'foil';
     } else if (finishes.includes('etched')) {
