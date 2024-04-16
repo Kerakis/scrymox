@@ -54,15 +54,24 @@
         } else if (card.finishes.includes('foil')) {
           card.selectedFinish = 'foil';
           card.displayFinish = '*F*';
+          if (!card.priceManuallySet) {
+            card.displayedPrice = card.prices.usd_foil;
+          }
         } else if (card.finishes.includes('etched')) {
           card.selectedFinish = 'etched';
           card.displayFinish = '*E*';
+          if (!card.priceManuallySet) {
+            card.displayedPrice = card.prices.usd_etched;
+          }
         }
         dispatch('update', card);
       } else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
         if (card.finishes.includes('nonfoil')) {
           card.selectedFinish = '';
           card.displayFinish = '';
+          if (!card.priceManuallySet) {
+            card.displayedPrice = card.prices.usd;
+          }
         }
         dispatch('update', card);
       } else {

@@ -27,6 +27,17 @@
     if (cards.length > 0 && priceDropdown) {
       priceDropdown.value = '';
     }
+    cards.forEach((card) => {
+      if (!card.hasOwnProperty('displayedPrice')) {
+        card.displayedPrice =
+          card.selectedFinish === 'foil'
+            ? card.prices.usd_foil
+            : card.selectedFinish === 'etched'
+              ? card.prices.usd_etched
+              : card.prices.usd;
+        card.priceManuallySet = false;
+      }
+    });
   }
 
   const languages = {
@@ -61,7 +72,6 @@
   const updateCard = (index, field, value) => {
     let updatedCards = [...cards];
     if (value instanceof Event) {
-      // @ts-ignore
       updatedCards[index][field] = value.currentTarget.value;
     } else {
       updatedCards[index][field] = value;
@@ -106,23 +116,27 @@
     dispatch('update', cards);
   };
 
-  const changeAllPrices = (event) => {
-    let updatedCards = [...cards];
-    updatedCards.forEach((card) => {
-      card.prices = event.target.value === 'Ignore Prices' ? '' : card.prices;
-    });
-    cards = updatedCards;
+  const updatePrice = (index, event) => {
+    cards[index].displayedPrice = event.target.value;
+    cards[index].priceManuallySet = true;
     dispatch('update', cards);
   };
 
-  const updatePrice = (index, event) => {
-    if (cards[index].selectedFinish === 'foil') {
-      cards[index].prices.usd_foil = event.target.value;
-    } else if (cards[index].selectedFinish === 'etched') {
-      cards[index].prices.usd_etched = event.target.value;
-    } else {
-      cards[index].prices.usd = event.target.value;
-    }
+  const changeAllPrices = (event) => {
+    cards.forEach((card) => {
+      if (event.target.value === 'Remove Prices') {
+        card.displayedPrice = '';
+        card.priceManuallySet = false;
+      } else if (event.target.value === 'Use Current Prices') {
+        card.displayedPrice =
+          card.selectedFinish === 'foil'
+            ? card.prices.usd_foil
+            : card.selectedFinish === 'etched'
+              ? card.prices.usd_etched
+              : card.prices.usd;
+        card.priceManuallySet = false;
+      }
+    });
     dispatch('update', cards);
   };
 
@@ -157,11 +171,7 @@
         card.collector_number,
         card.alter,
         card.proxy,
-        card.selectedFinish === 'foil'
-          ? card.prices.usd_foil
-          : card.selectedFinish === 'etched'
-            ? card.prices.usd_etched
-            : card.prices.usd,
+        card.displayedPrice,
       ].join(',')
     );
     const csvString = [headers.join(','), ...csvRows].join('\n');
@@ -233,12 +243,13 @@
         </th>
         <th class="px-2 text-center">
           <select
+            bind:this={priceDropdown}
             class="appearance-none outline-none bg-indigo-900"
             on:change={changeAllPrices}
           >
             <option value="" selected disabled>Purchase Price</option>
             <option value="Use Current Prices">Use Current Prices</option>
-            <option value="Ignore Prices">Ignore Prices</option>
+            <option value="Remove Prices">Remove Prices</option>
           </select>
         </th>
       </tr>
@@ -301,14 +312,14 @@
             class="px-2 text-center uppercase cursor-pointer"
             on:click={() => toggleStatus(index, 'proxy')}>{card.proxy}</td
           >
-          <!-- <td class="px-2 text-center">
+          <td class="px-2 text-center">
             <input
               type="number"
               class="appearance-none outline-none bg-indigo-900"
-              bind:value={card.prices}
+              bind:value={card.displayedPrice}
               on:input={(event) => updatePrice(index, event)}
             />
-          </td> -->
+          </td>
         </tr>
       {/each}
     </tbody>

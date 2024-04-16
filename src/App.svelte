@@ -1,5 +1,4 @@
 <script>
-  import Card from './Card.svelte';
   import { onMount, onDestroy } from 'svelte';
   import BulkEdit from './BulkEdit.svelte';
   import CSV from './CSV.svelte';
