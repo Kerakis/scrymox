@@ -12,6 +12,16 @@
   let showImageModal = false;
   let selectedImages = null;
 
+  $: {
+    if (card.selectedFinish === 'foil') {
+      card.displayFinish = '*F*';
+    } else if (card.selectedFinish === 'etched') {
+      card.displayFinish = '*E*';
+    } else {
+      card.displayFinish = '';
+    }
+  }
+
   const dispatch = createEventDispatcher();
 
   const handleMouseOver = () => {
@@ -185,16 +195,25 @@
           on:click={() => {
             card.displayFinish = '*F*';
             card.selectedFinish = 'foil';
+            if (!card.priceManuallySet) {
+              card.displayedPrice = card.prices.usd_foil;
+            }
             finishModal = false;
+            dispatch('update', card);
           }}
           class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >Foil</button
         >
+
         <button
           on:click={() => {
             card.displayFinish = '*E*';
             card.selectedFinish = 'etched';
+            if (!card.priceManuallySet) {
+              card.displayedPrice = card.prices.usd_etched;
+            }
             finishModal = false;
+            dispatch('update', card);
           }}
           class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >Etched</button
