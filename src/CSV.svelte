@@ -155,7 +155,8 @@
     let updatedCards = [...cards];
     updatedCards.forEach((card) => {
       if (card.finishes.includes(event.target.value)) {
-        card.selectedFinish = event.target.value;
+        card.selectedFinish =
+          event.target.value === 'nonfoil' ? '' : event.target.value;
       }
     });
     cards = updatedCards;
@@ -164,7 +165,8 @@
 
   const changeFinish = (index, event) => {
     if (cards[index].finishes.includes(event.target.value)) {
-      updateCard(index, 'selectedFinish', event.target.value);
+      let value = event.target.value === 'nonfoil' ? '' : event.target.value;
+      updateCard(index, 'selectedFinish', value);
     }
   };
 
@@ -435,7 +437,7 @@
           <td class="px-2 text-center">
             <input
               type="number"
-              class="appearance-none outline-none bg-indigo-900"
+              class="w-28 border-0 bg-transparent text-center outline-none text-gray-200"
               bind:value={card.displayedPrice}
               on:input={(event) => updatePrice(index, event)}
             />
