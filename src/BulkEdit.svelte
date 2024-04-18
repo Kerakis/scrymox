@@ -1,11 +1,63 @@
 <script>
   import Card from './Card.svelte';
   export let cards = [];
-  export let copyToClipboard;
-  export let isCopyButtonDisabled;
-  export let copyButtonText;
-  export let download;
-  export let downloadButtonText;
+  let isCopyButtonDisabled = false;
+  let copyButtonText = 'Copy';
+  let downloadButtonText = 'Download';
+  let downloadLink = '';
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(
+      cards
+        .map(
+          (card) =>
+            `${card.count} ${card.name} (${card.set}) ${card.collector_number} ${card.displayFinish}`
+        )
+        .join('\n')
+    );
+
+    copyButtonText = 'Copied!';
+    isCopyButtonDisabled = true;
+
+    setTimeout(() => {
+      copyButtonText = 'Copy';
+      isCopyButtonDisabled = false;
+    }, 5000);
+  };
+
+  const originalDownload = () => {
+    const a = document.createElement('a');
+    a.href = downloadLink;
+    a.download = 'cards.txt';
+    a.click();
+
+    downloadButtonText = 'Import into Moxfield';
+    download = () => {
+      const a = document.createElement('a');
+      a.href = 'https://www.moxfield.com/';
+      a.target = '_blank';
+      a.rel = 'noreferrer';
+      a.click();
+    };
+
+    setTimeout(() => {
+      downloadButtonText = 'Download';
+      download = originalDownload;
+    }, 5000);
+  };
+
+  let download = originalDownload;
+
+  $: {
+    const text = cards
+      .map(
+        (card) =>
+          `${card.count} ${card.name} (${card.set}) ${card.collector_number} ${card.displayFinish}`
+      )
+      .join('\n');
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    downloadLink = URL.createObjectURL(blob);
+  }
 </script>
 
 <div

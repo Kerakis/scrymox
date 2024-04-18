@@ -71,6 +71,14 @@
     cards = [
       ...cards,
       ...data.data.map((card) => {
+        let selectedFinish = getDefaultFinish(card.finishes);
+        let displayFinish = '';
+        if (selectedFinish === 'foil') {
+          displayFinish = '*F*';
+        } else if (selectedFinish === 'etched') {
+          displayFinish = '*E*';
+        }
+
         if (!card.card_faces) {
           return {
             id: card.id,
@@ -79,7 +87,8 @@
             image_uris: card.image_uris,
             name: card.name,
             finishes: card.finishes,
-            selectedFinish: getDefaultFinish(card.finishes),
+            selectedFinish: selectedFinish,
+            displayFinish: displayFinish,
             count: 1,
             condition: 'NM',
             language: 'EN',
@@ -98,7 +107,8 @@
             ],
             name: card.name,
             finishes: card.finishes,
-            selectedFinish: getDefaultFinish(card.finishes),
+            selectedFinish: selectedFinish,
+            displayFinish: displayFinish,
             count: 1,
             condition: 'NM',
             language: 'EN',
@@ -116,7 +126,8 @@
               : card.card_faces[0].image_uris,
             name: card.name,
             finishes: card.finishes,
-            selectedFinish: getDefaultFinish(card.finishes),
+            selectedFinish: selectedFinish,
+            displayFinish: displayFinish,
             count: 1,
             condition: 'NM',
             language: 'EN',
@@ -154,59 +165,6 @@
 
   const saveDefaultQueryOptions = () => {
     localStorage.setItem('defaultQueryOptions', defaultQueryOptions);
-  };
-
-  $: {
-    const text = cards
-      .map(
-        (card) =>
-          `${card.count} ${card.name} (${card.set}) ${card.collector_number} ${card.selectedFinish}`
-      )
-      .join('\n');
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    downloadLink = URL.createObjectURL(blob);
-  }
-
-  const originalDownload = () => {
-    const a = document.createElement('a');
-    a.href = downloadLink;
-    a.download = 'cards.txt';
-    a.click();
-
-    downloadButtonText = 'Import into Moxfield';
-    download = () => {
-      const a = document.createElement('a');
-      a.href = 'https://www.moxfield.com/';
-      a.target = '_blank';
-      a.rel = 'noreferrer';
-      a.click();
-    };
-
-    setTimeout(() => {
-      downloadButtonText = 'Download';
-      download = originalDownload;
-    }, 5000);
-  };
-
-  let download = originalDownload;
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(
-      cards
-        .map(
-          (card) =>
-            `${card.count} ${card.name} (${card.set}) ${card.collector_number} ${card.selectedFinish}`
-        )
-        .join('\n')
-    );
-
-    copyButtonText = 'Copied!';
-    isCopyButtonDisabled = true;
-
-    setTimeout(() => {
-      copyButtonText = 'Copy';
-      isCopyButtonDisabled = false;
-    }, 5000);
   };
 </script>
 
@@ -368,11 +326,6 @@
             {#if selectedTab === 'Bulk Edit'}
               <BulkEdit
                 {cards}
-                {copyToClipboard}
-                {isCopyButtonDisabled}
-                {copyButtonText}
-                {download}
-                {downloadButtonText}
                 on:update={({ detail }) =>
                   (cards = cards.map((card) =>
                     card.id === detail.id ? detail : card
