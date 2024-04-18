@@ -198,7 +198,7 @@
     cards.forEach((card) => {
       if (event.target.value === 'Remove Prices') {
         card.displayedPrice = '';
-        card.priceManuallySet = false;
+        card.priceManuallySet = true;
       } else if (event.target.value === 'Use Current Prices') {
         card.displayedPrice =
           card.selectedFinish === 'foil'

@@ -15,10 +15,19 @@
   $: {
     if (card.selectedFinish === 'foil') {
       card.displayFinish = '*F*';
+      if (!card.priceManuallySet) {
+        card.displayedPrice = card.prices.usd_foil;
+      }
     } else if (card.selectedFinish === 'etched') {
       card.displayFinish = '*E*';
+      if (!card.priceManuallySet) {
+        card.displayedPrice = card.prices.usd_etched;
+      }
     } else {
       card.displayFinish = '';
+      if (!card.priceManuallySet) {
+        card.displayedPrice = card.prices.usd;
+      }
     }
   }
 
