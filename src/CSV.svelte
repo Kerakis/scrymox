@@ -62,6 +62,9 @@
     if (event.key === 'Escape') {
       showCountModal = false;
     }
+    if (event.key === 'Enter') {
+      changeAllCounts();
+    }
   };
 
   const handleClickOutside = (event) => {
@@ -261,7 +264,7 @@
           <button on:click={toggleModal}>Count</button>
           {#if showCountModal}
             <div
-              class="modal absolute z-50 top-full left-0 mt-2 w-64 rounded-lg shadow-lg bg-indigo-800"
+              class="modal absolute z-50 top-full left-0 mt-1 w-64 rounded-lg shadow-lg bg-indigo-800"
             >
               <div
                 class="py-1"
@@ -269,16 +272,17 @@
                 aria-orientation="vertical"
                 aria-labelledby="options-menu"
               >
-                <div class="px-4 py-2">
+                <div class="py-2">
                   <input
                     type="number"
                     min="1"
                     max="99"
                     bind:this={countInput}
                     class="appearance-none outline-none bg-indigo-900 w-12"
+                    on:keydown={handleKeyDown}
                   />
                   <button
-                    class="ml-2 px-2 py-1 bg-indigo-600 text-white rounded"
+                    class="ml-2 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     on:click={changeAllCounts}
                   >
                     Update All
