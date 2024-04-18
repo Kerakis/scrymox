@@ -1,15 +1,17 @@
 <script>
   // @ts-nocheck
 
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import Card from './Card.svelte';
   export let cards = [];
   const dispatch = createEventDispatcher();
+  let countInput;
   let languageDropdown;
   let conditionDropdown;
   let alterDropdown;
   let proxyDropdown;
   let priceDropdown;
+  let showCountModal = false;
 
   $: {
     if (cards.length > 0 && languageDropdown) {
@@ -39,6 +41,33 @@
       }
     });
   }
+
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('click', handleClickOutside);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('click', handleClickOutside);
+  });
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      showCountModal = false;
+    }
+  };
+
+  const handleClickOutside = (event) => {
+    if (event.target.closest('.modal') === null) {
+      showCountModal = false;
+    }
+  };
+
+  const toggleModal = (event) => {
+    event.stopPropagation();
+    showCountModal = !showCountModal;
+  };
 
   const languages = {
     EN: 'English',
@@ -78,6 +107,19 @@
     }
     cards = updatedCards;
     dispatch('update', cards);
+  };
+
+  const changeAllCounts = () => {
+    let updatedCards = [...cards];
+    const newCount = parseInt(countInput.value);
+    if (newCount >= 1 && newCount <= 99) {
+      updatedCards.forEach((card) => {
+        card.count = newCount;
+      });
+      cards = updatedCards;
+      dispatch('update', cards);
+    }
+    showCountModal = false;
   };
 
   const changeAllLanguages = (event) => {
@@ -187,16 +229,46 @@
 <div
   class="cards text-gray-200 border border-gray-500 rounded-md mt-4 overflow-auto h-64"
 >
-  <table class="table-auto w-full mt-4 text-gray-200">
-    <thead>
+  <table class="table-auto w-full text-gray-200">
+    <thead class="sticky z-50 top-0 bg-indigo-800">
       <tr>
-        <th class="px-2 text-center">Count</th>
+        <th class="px-2 text-center relative">
+          <button on:click={toggleModal}>Count</button>
+          {#if showCountModal}
+            <div
+              class="modal absolute z-50 top-full left-0 mt-2 w-64 rounded-lg shadow-lg bg-indigo-800"
+            >
+              <div
+                class="py-1"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="options-menu"
+              >
+                <div class="px-4 py-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="99"
+                    bind:this={countInput}
+                    class="appearance-none outline-none bg-indigo-900 w-12"
+                  />
+                  <button
+                    class="ml-2 px-2 py-1 bg-indigo-600 text-white rounded"
+                    on:click={changeAllCounts}
+                  >
+                    Update All
+                  </button>
+                </div>
+              </div>
+            </div>
+          {/if}
+        </th>
         <th class="px-2 text-center">Name</th>
         <th class="px-2 text-center">Edition</th>
         <th class="px-2 text-center">
           <select
             bind:this={conditionDropdown}
-            class="appearance-none outline-none bg-indigo-900"
+            class="appearance-none outline-none bg-indigo-800"
             on:change={changeAllConditions}
           >
             <option value="" selected disabled>Condition</option>
@@ -208,7 +280,7 @@
         <th class="px-2 text-center">
           <select
             bind:this={languageDropdown}
-            class="appearance-none outline-none bg-indigo-900"
+            class="appearance-none outline-none bg-indigo-800"
             on:change={changeAllLanguages}
           >
             <option value="" selected disabled>Language</option>
@@ -222,7 +294,7 @@
         <th class="px-2 text-center">
           <select
             bind:this={alterDropdown}
-            class="appearance-none outline-none bg-indigo-900"
+            class="appearance-none outline-none bg-indigo-800"
             on:change={changeAllAlters}
           >
             <option value="" selected disabled>Alter</option>
@@ -233,7 +305,7 @@
         <th class="px-2 text-center">
           <select
             bind:this={proxyDropdown}
-            class="appearance-none outline-none bg-indigo-900"
+            class="appearance-none outline-none bg-indigo-800"
             on:change={changeAllProxies}
           >
             <option value="" selected disabled>Proxy</option>
@@ -244,7 +316,7 @@
         <th class="px-2 text-center">
           <select
             bind:this={priceDropdown}
-            class="appearance-none outline-none bg-indigo-900"
+            class="appearance-none outline-none bg-indigo-800"
             on:change={changeAllPrices}
           >
             <option value="" selected disabled>Purchase Price</option>
@@ -259,8 +331,7 @@
         <tr>
           <td class="px-2 text-center">
             <input
-              type="text"
-              inputmode="numeric"
+              type="number"
               class="w-12 border-0 bg-transparent text-center outline-none text-gray-200"
               bind:value={card.count}
               on:input={(event) => updateCard(index, 'count', event)}
