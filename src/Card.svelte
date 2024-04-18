@@ -187,7 +187,7 @@
       on:click={() => (finishModal = false)}
     >
       <div
-        class="bg-slate-800 bg-opacity-75 rounded-lg p-4"
+        class="bg-indigo-800 bg-opacity-90 rounded-lg p-4"
         on:click|stopPropagation
       >
         <h2 class="text-lg font-semibold mb-2">{card.name}</h2>

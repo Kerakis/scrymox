@@ -8,10 +8,12 @@
   let countInput;
   let languageDropdown;
   let conditionDropdown;
+  let foilDropdown;
   let alterDropdown;
   let proxyDropdown;
   let priceDropdown;
   let showCountModal = false;
+  let availableFinishes = [];
 
   $: {
     if (cards.length > 0 && languageDropdown) {
@@ -29,6 +31,9 @@
     if (cards.length > 0 && priceDropdown) {
       priceDropdown.value = '';
     }
+    if (cards.length > 0 && foilDropdown) {
+      foilDropdown.value = '';
+    }
     cards.forEach((card) => {
       if (!card.hasOwnProperty('displayedPrice')) {
         card.displayedPrice =
@@ -40,6 +45,7 @@
         card.priceManuallySet = false;
       }
     });
+    availableFinishes = [...new Set(cards.flatMap((card) => card.finishes))];
   }
 
   onMount(() => {
@@ -98,6 +104,8 @@
     DM: 'Damaged',
   };
 
+  const finishes = ['nonfoil', 'foil', 'etched'];
+
   const updateCard = (index, field, value) => {
     let updatedCards = [...cards];
     if (value instanceof Event) {
@@ -138,6 +146,23 @@
     });
     cards = updatedCards;
     dispatch('update', cards);
+  };
+
+  const changeAllFinishes = (event) => {
+    let updatedCards = [...cards];
+    updatedCards.forEach((card) => {
+      if (card.finishes.includes(event.target.value)) {
+        card.selectedFinish = event.target.value;
+      }
+    });
+    cards = updatedCards;
+    dispatch('update', cards);
+  };
+
+  const changeFinish = (index, event) => {
+    if (cards[index].finishes.includes(event.target.value)) {
+      updateCard(index, 'selectedFinish', event.target.value);
+    }
   };
 
   const changeAllProxies = (event) => {
@@ -230,7 +255,7 @@
   class="cards text-gray-200 border border-gray-500 rounded-md mt-4 overflow-auto h-64"
 >
   <table class="table-auto w-full text-gray-200">
-    <thead class="sticky z-50 top-0 bg-indigo-800">
+    <thead class="sticky z-40 top-0 bg-indigo-800">
       <tr>
         <th class="px-2 text-center relative">
           <button on:click={toggleModal}>Count</button>
@@ -289,7 +314,23 @@
             {/each}
           </select>
         </th>
-        <th class="px-2 text-center">Foil</th>
+        <th class="px-2 text-center">
+          <select
+            bind:this={foilDropdown}
+            class="appearance-none outline-none bg-indigo-800"
+            on:change={changeAllFinishes}
+          >
+            <option value="" selected disabled>Foil</option>
+            {#each finishes as finish}
+              <option
+                value={finish}
+                disabled={!availableFinishes.includes(finish)}
+              >
+                {finish}
+              </option>
+            {/each}
+          </select>
+        </th>
         <th class="px-2 text-center">Collector Number</th>
         <th class="px-2 text-center">
           <select
@@ -366,13 +407,17 @@
             </select>
           </td>
           <td class="px-2 text-center">
-            {#if card.selectedFinish === 'foil'}
-              Foil
-            {:else if card.selectedFinish === 'etched'}
-              Etched
-            {:else}
-              Nonfoil
-            {/if}
+            <select
+              class="appearance-none outline-none bg-indigo-900"
+              bind:value={card.selectedFinish}
+              on:change={(event) => changeFinish(index, event)}
+            >
+              {#each finishes as finish}
+                {#if card.finishes.includes(finish)}
+                  <option value={finish}>{finish}</option>
+                {/if}
+              {/each}
+            </select>
           </td>
           <td class="px-2 text-center">{card.collector_number}</td>
           <td
