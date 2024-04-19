@@ -109,9 +109,27 @@
 
   const finishes = ['nonfoil', 'foil', 'etched'];
 
-  const updateCard = (index, field, value) => {
+  const updateCard = (index, field, event) => {
     let updatedCards = [...cards];
-    if (value instanceof Event) {
+    if (field === 'count') {
+      const validInput = /^(\d+\.?\d*|\.\d+)$/;
+      const controlKeys = [
+        'Backspace',
+        'ArrowLeft',
+        'ArrowRight',
+        'Tab',
+        'Delete',
+      ];
+      if (
+        !validInput.test(event.key) &&
+        !controlKeys.includes(event.key) &&
+        event.key !== '.'
+      ) {
+        event.preventDefault();
+      } else {
+        updatedCards[index][field] = event.target.value;
+      }
+    } else if (value instanceof Event) {
       updatedCards[index][field] = value.currentTarget.value;
     } else {
       updatedCards[index][field] = value;
@@ -189,9 +207,25 @@
   };
 
   const updatePrice = (index, event) => {
-    cards[index].displayedPrice = event.target.value;
-    cards[index].priceManuallySet = true;
-    dispatch('update', cards);
+    const validInput = /^(\d+\.?\d*|\.\d+)$/;
+    const controlKeys = [
+      'Backspace',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      'Delete',
+    ];
+    if (
+      !validInput.test(event.key) &&
+      !controlKeys.includes(event.key) &&
+      event.key !== '.'
+    ) {
+      event.preventDefault();
+    } else {
+      cards[index].displayedPrice = event.target.value;
+      cards[index].priceManuallySet = true;
+      dispatch('update', cards);
+    }
   };
 
   const changeAllPrices = (event) => {
@@ -378,10 +412,10 @@
         <tr>
           <td class="px-2 text-center">
             <input
-              type="number"
+              type="text"
               class="w-12 border-0 bg-transparent text-center outline-none text-gray-200"
               bind:value={card.count}
-              on:input={(event) => updateCard(index, 'count', event)}
+              on:keydown={(event) => updateCard(index, 'count', event)}
             />
           </td>
           <td class="px-2 text-center underline"
@@ -436,10 +470,10 @@
           >
           <td class="px-2 text-center">
             <input
-              type="number"
+              type="text"
               class="w-28 border-0 bg-transparent text-center outline-none text-gray-200"
               bind:value={card.displayedPrice}
-              on:input={(event) => updatePrice(index, event)}
+              on:keydown={(event) => updatePrice(index, event)}
             />
           </td>
         </tr>
