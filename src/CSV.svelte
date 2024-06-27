@@ -109,7 +109,7 @@
 
   const finishes = ['nonfoil', 'foil', 'etched'];
 
-  const updateCard = (index, field, event) => {
+  const updateCard = (index, field, eventOrValue) => {
     let updatedCards = [...cards];
     if (field === 'count') {
       const validInput = /^(\d+\.?\d*|\.\d+)$/;
@@ -121,18 +121,18 @@
         'Delete',
       ];
       if (
-        !validInput.test(event.key) &&
-        !controlKeys.includes(event.key) &&
-        event.key !== '.'
+        !validInput.test(eventOrValue.key) &&
+        !controlKeys.includes(eventOrValue.key) &&
+        eventOrValue.key !== '.'
       ) {
-        event.preventDefault();
+        eventOrValue.preventDefault();
       } else {
-        updatedCards[index][field] = event.target.value;
+        updatedCards[index][field] = eventOrValue.target.value;
       }
-    } else if (value instanceof Event) {
-      updatedCards[index][field] = value.currentTarget.value;
+    } else if (eventOrValue instanceof Event) {
+      updatedCards[index][field] = eventOrValue.currentTarget.value;
     } else {
-      updatedCards[index][field] = value;
+      updatedCards[index][field] = eventOrValue;
     }
     cards = updatedCards;
     dispatch('update', cards);
