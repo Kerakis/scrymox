@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.0.2",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "svelte": "^4.2.19",
     "tailwindcss": "^3.4.3",
-    "vite": "^5.4.18"
+    "vite": "^6.3.0"
   },
   "dependencies": {
     "svelte-device-info": "^1.0.4"
