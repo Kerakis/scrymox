@@ -1,52 +1,39 @@
 <script>
-  // @ts-nocheck
-
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import Card from './Card.svelte';
-  export let cards = [];
-  const dispatch = createEventDispatcher();
-  let countInput;
-  let languageDropdown;
-  let conditionDropdown;
-  let foilDropdown;
-  let alterDropdown;
-  let proxyDropdown;
-  let priceDropdown;
-  let showCountModal = false;
-  let availableFinishes = [];
+  
+  let { cards = [], onupdate } = $props();
+  let countInput = $state();
+  let languageDropdown = $state();
+  let conditionDropdown = $state();
+  let foilDropdown = $state();
+  let alterDropdown = $state();
+  let proxyDropdown = $state();
+  let priceDropdown = $state();
+  let showCountModal = $state(false);
+  let availableFinishes = $state([]);
 
-  $: {
+  $effect(() => {
     if (cards.length > 0 && languageDropdown) {
-      languageDropdown.value = '';
+      languageDropdown.value = 'EN';
     }
     if (cards.length > 0 && conditionDropdown) {
-      conditionDropdown.value = '';
+      conditionDropdown.value = 'NM';
     }
     if (cards.length > 0 && alterDropdown) {
-      alterDropdown.value = '';
+      alterDropdown.value = false;
     }
     if (cards.length > 0 && proxyDropdown) {
-      proxyDropdown.value = '';
+      proxyDropdown.value = false;
     }
     if (cards.length > 0 && priceDropdown) {
-      priceDropdown.value = '';
+      priceDropdown.value = 'auto';
     }
     if (cards.length > 0 && foilDropdown) {
       foilDropdown.value = '';
     }
-    cards.forEach((card) => {
-      if (!card.hasOwnProperty('displayedPrice')) {
-        card.displayedPrice =
-          card.selectedFinish === 'foil'
-            ? card.prices.usd_foil
-            : card.selectedFinish === 'etched'
-              ? card.prices.usd_etched
-              : card.prices.usd;
-        card.priceManuallySet = false;
-      }
-    });
     availableFinishes = [...new Set(cards.flatMap((card) => card.finishes))];
-  }
+  });
 
   onMount(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -62,7 +49,7 @@
     if (event.key === 'Escape') {
       showCountModal = false;
     }
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && showCountModal) {
       changeAllCounts();
     }
   };
@@ -112,30 +99,21 @@
   const updateCard = (index, field, eventOrValue) => {
     let updatedCards = [...cards];
     if (field === 'count') {
-      const validInput = /^(\d+\.?\d*|\.\d+)$/;
-      const controlKeys = [
-        'Backspace',
-        'ArrowLeft',
-        'ArrowRight',
-        'Tab',
-        'Delete',
-      ];
-      if (
-        !validInput.test(eventOrValue.key) &&
-        !controlKeys.includes(eventOrValue.key) &&
-        eventOrValue.key !== '.'
-      ) {
-        eventOrValue.preventDefault();
-      } else {
-        updatedCards[index][field] = eventOrValue.target.value;
+      const newCount = parseInt(eventOrValue);
+      if (newCount >= 1 && newCount <= 99) {
+        updatedCards[index][field] = newCount;
       }
     } else if (eventOrValue instanceof Event) {
-      updatedCards[index][field] = eventOrValue.currentTarget.value;
+      const target = eventOrValue.currentTarget;
+      if (target && 'value' in target) {
+        updatedCards[index][field] = target.value;
+      }
     } else {
       updatedCards[index][field] = eventOrValue;
     }
-    cards = updatedCards;
-    dispatch('update', cards);
+    if (onupdate) {
+      onupdate(updatedCards);
+    }
   };
 
   const changeAllCounts = () => {
@@ -145,146 +123,175 @@
       updatedCards.forEach((card) => {
         card.count = newCount;
       });
-      cards = updatedCards;
-      dispatch('update', cards);
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
     }
     showCountModal = false;
   };
 
   const changeAllLanguages = (event) => {
     let updatedCards = [...cards];
-    updatedCards.forEach((card) => {
-      card.language = event.currentTarget.value;
-    });
-    cards = updatedCards;
-    dispatch('update', cards);
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      updatedCards.forEach((card) => {
+        card.language = target.value;
+      });
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
+    }
   };
 
   const changeAllConditions = (event) => {
     let updatedCards = [...cards];
-    updatedCards.forEach((card) => {
-      card.condition = event.target.value;
-    });
-    cards = updatedCards;
-    dispatch('update', cards);
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      updatedCards.forEach((card) => {
+        card.condition = target.value;
+      });
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
+    }
   };
 
   const changeAllFinishes = (event) => {
     let updatedCards = [...cards];
-    updatedCards.forEach((card) => {
-      if (card.finishes.includes(event.target.value)) {
-        card.selectedFinish =
-          event.target.value === 'nonfoil' ? '' : event.target.value;
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      const selectedFinish = target.value;
+      updatedCards.forEach((card) => {
+        card.selectedFinish = selectedFinish;
+        if (selectedFinish === 'foil') {
+          card.displayFinish = '*F*';
+        } else if (selectedFinish === 'etched') {
+          card.displayFinish = '*E*';
+        } else {
+          card.displayFinish = '';
+        }
+      });
+      if (onupdate) {
+        onupdate(updatedCards);
       }
-    });
-    cards = updatedCards;
-    dispatch('update', cards);
+    }
   };
 
   const changeFinish = (index, event) => {
-    if (cards[index].finishes.includes(event.target.value)) {
-      let value = event.target.value === 'nonfoil' ? '' : event.target.value;
-      updateCard(index, 'selectedFinish', value);
+    let updatedCards = [...cards];
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      const selectedFinish = target.value;
+      updatedCards[index].selectedFinish = selectedFinish;
+      if (selectedFinish === 'foil') {
+        updatedCards[index].displayFinish = '*F*';
+      } else if (selectedFinish === 'etched') {
+        updatedCards[index].displayFinish = '*E*';
+      } else {
+        updatedCards[index].displayFinish = '';
+      }
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
     }
   };
 
   const changeAllProxies = (event) => {
     let updatedCards = [...cards];
-    updatedCards.forEach((card) => {
-      card.proxy = event.target.value === 'TRUE';
-    });
-    cards = updatedCards;
-    dispatch('update', cards);
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      const isProxy = target.value === 'true';
+      updatedCards.forEach((card) => {
+        card.proxy = isProxy;
+      });
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
+    }
   };
 
   const changeAllAlters = (event) => {
     let updatedCards = [...cards];
-    updatedCards.forEach((card) => {
-      card.alter = event.target.value === 'TRUE';
-    });
-    cards = updatedCards;
-    dispatch('update', cards);
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      const isAlter = target.value === 'true';
+      updatedCards.forEach((card) => {
+        card.alter = isAlter;
+      });
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
+    }
   };
 
   const updatePrice = (index, event) => {
-    const validInput = /^(\d+\.?\d*|\.\d+)$/;
-    const controlKeys = [
-      'Backspace',
-      'ArrowLeft',
-      'ArrowRight',
-      'Tab',
-      'Delete',
-    ];
-    if (
-      !validInput.test(event.key) &&
-      !controlKeys.includes(event.key) &&
-      event.key !== '.'
-    ) {
-      event.preventDefault();
-    } else {
-      cards[index].displayedPrice = event.target.value;
-      cards[index].priceManuallySet = true;
-      dispatch('update', cards);
+    let updatedCards = [...cards];
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      updatedCards[index].price = parseFloat(target.value);
+      updatedCards[index].priceManuallySet = true;
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
     }
   };
 
   const changeAllPrices = (event) => {
-    cards.forEach((card) => {
-      if (event.target.value === 'Remove Prices') {
-        card.displayedPrice = '';
-        card.priceManuallySet = true;
-      } else if (event.target.value === 'Use Current Prices') {
-        card.displayedPrice =
-          card.selectedFinish === 'foil'
-            ? card.prices.usd_foil
-            : card.selectedFinish === 'etched'
-              ? card.prices.usd_etched
-              : card.prices.usd;
-        card.priceManuallySet = false;
+    let updatedCards = [...cards];
+    const target = event.currentTarget;
+    if (target && 'value' in target) {
+      const priceType = target.value;
+      if (priceType === 'auto') {
+        updatedCards.forEach((card) => {
+          card.priceManuallySet = false;
+        });
       }
-    });
-    dispatch('update', cards);
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
+    }
   };
 
   const toggleStatus = (index, field) => {
     let updatedCards = [...cards];
     updatedCards[index][field] = !updatedCards[index][field];
-    cards = updatedCards;
-    dispatch('update', cards);
+    if (onupdate) {
+      onupdate(updatedCards);
+    }
+  };
+
+  // Handle card updates from the Card component in CSV mode
+  const handleCardUpdate = (updatedCard) => {
+    let updatedCards = [...cards];
+    const cardIndex = updatedCards.findIndex(c => c.id === updatedCard.id);
+    if (cardIndex !== -1) {
+      updatedCards[cardIndex] = updatedCard;
+      if (onupdate) {
+        onupdate(updatedCards);
+      }
+    }
   };
 
   const downloadCSV = () => {
-    const headers = [
-      'Count',
-      'Name',
-      'Edition',
-      'Condition',
-      'Language',
-      'Foil',
-      'Collector Number',
-      'Alter',
-      'Proxy',
-      'Purchase Price',
-    ];
-    const csvRows = cards.map((card, index) =>
-      [
+    const csvContent = [
+      ['Count', 'Name', 'Edition', 'Card Number', 'Condition', 'Language', 'Foil', 'Alter', 'Proxy', 'Price'].join(','),
+      ...cards.map(card => [
         card.count,
         `"${card.name}"`,
-        card.set,
+        card.set.toUpperCase(),
+        card.collector_number,
         card.condition,
         card.language,
-        card.selectedFinish,
-        card.collector_number,
-        card.alter,
-        card.proxy,
-        card.displayedPrice,
-      ].join(',')
-    );
-    const csvString = [headers.join(','), ...csvRows].join('\n');
-    const csvBlob = new Blob([csvString], { type: 'text/csv' });
-    const csvUrl = URL.createObjectURL(csvBlob);
+        card.selectedFinish === 'foil' ? 'Foil' : (card.selectedFinish === 'etched' ? 'Etched' : ''),
+        card.alter ? 'Yes' : '',
+        card.proxy ? 'Yes' : '',
+        card.price || ''
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = csvUrl;
+    link.href = URL.createObjectURL(blob);
     link.download = 'cards.csv';
     link.click();
   };
@@ -294,186 +301,167 @@
   class="cards text-gray-200 border border-gray-500 rounded-md mt-4 overflow-auto h-64"
 >
   <table class="table-auto w-full text-gray-200">
-    <thead class="sticky z-40 top-0 bg-indigo-800">
-      <tr>
-        <th class="px-2 text-center relative">
-          <button on:click={toggleModal}>Count</button>
+    <thead>
+      <tr class="border-b border-gray-500">
+        <th class="px-2 py-1 text-left">
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <span onclick={toggleModal} class="cursor-pointer">Count</span>
           {#if showCountModal}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
-              class="modal absolute z-50 top-full left-0 mt-1 w-64 rounded-lg shadow-lg bg-indigo-800"
+              class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 modal"
+              onclick={() => (showCountModal = false)}
             >
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
               <div
-                class="py-1"
-                role="menu"
-                aria-orientation="vertical"
-                aria-labelledby="options-menu"
+                class="bg-indigo-800 text-gray-200 p-4 rounded-lg"
+                onclick={(e) => e.stopPropagation()}
               >
-                <div class="py-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max="99"
-                    bind:this={countInput}
-                    class="appearance-none outline-none bg-indigo-900 w-12"
-                    on:keydown={handleKeyDown}
-                  />
-                  <button
-                    class="ml-2 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    on:click={changeAllCounts}
-                  >
-                    Update All
-                  </button>
-                </div>
+                <input
+                  bind:this={countInput}
+                  type="number"
+                  min="1"
+                  max="99"
+                  placeholder="Count"
+                  class="px-2 py-1 rounded text-gray-800"
+                />
+                <button onclick={changeAllCounts} class="ml-2 px-2 py-1 bg-indigo-600 rounded">
+                  Apply to All
+                </button>
               </div>
             </div>
           {/if}
         </th>
-        <th class="px-2 text-center">Name</th>
-        <th class="px-2 text-center">Edition</th>
-        <th class="px-2 text-center">
-          <select
-            bind:this={conditionDropdown}
-            class="appearance-none outline-none bg-indigo-800"
-            on:change={changeAllConditions}
-          >
-            <option value="" selected disabled>Condition</option>
-            {#each Object.entries(conditions) as [code, condition]}
-              <option value={code}>{condition}</option>
+        <th class="px-2 py-1 text-left">Name</th>
+        <th class="px-2 py-1 text-left">Edition</th>
+        <th class="px-2 py-1 text-left">
+          <select bind:this={conditionDropdown} onchange={changeAllConditions} class="bg-indigo-700 text-gray-200 rounded">
+            <option value="">Condition</option>
+            {#each Object.entries(conditions) as [key, value]}
+              <option value={key}>{value}</option>
             {/each}
           </select>
         </th>
-        <th class="px-2 text-center">
-          <select
-            bind:this={languageDropdown}
-            class="appearance-none outline-none bg-indigo-800"
-            on:change={changeAllLanguages}
-          >
-            <option value="" selected disabled>Language</option>
-            {#each Object.entries(languages) as [code, language]}
-              <option value={code}>{language}</option>
+        <th class="px-2 py-1 text-left">
+          <select bind:this={languageDropdown} onchange={changeAllLanguages} class="bg-indigo-700 text-gray-200 rounded">
+            <option value="">Language</option>
+            {#each Object.entries(languages) as [key, value]}
+              <option value={key}>{value}</option>
             {/each}
           </select>
         </th>
-        <th class="px-2 text-center">
-          <select
-            bind:this={foilDropdown}
-            class="appearance-none outline-none bg-indigo-800"
-            on:change={changeAllFinishes}
-          >
-            <option value="" selected disabled>Foil</option>
-            {#each finishes as finish}
-              <option
-                value={finish}
-                disabled={!availableFinishes.includes(finish)}
-              >
-                {finish}
-              </option>
-            {/each}
+        <th class="px-2 py-1 text-left">
+          <select bind:this={foilDropdown} onchange={changeAllFinishes} class="bg-indigo-700 text-gray-200 rounded">
+            <option value="">Finish</option>
+            <option value="">Normal</option>
+            <option value="foil">Foil</option>
+            <option value="etched">Etched</option>
           </select>
         </th>
-        <th class="px-2 text-center">Collector Number</th>
-        <th class="px-2 text-center">
-          <select
-            bind:this={alterDropdown}
-            class="appearance-none outline-none bg-indigo-800"
-            on:change={changeAllAlters}
-          >
-            <option value="" selected disabled>Alter</option>
-            <option value="TRUE">TRUE</option>
-            <option value="FALSE">FALSE</option>
+        <th class="px-2 py-1 text-left">
+          <select bind:this={alterDropdown} onchange={changeAllAlters} class="bg-indigo-700 text-gray-200 rounded">
+            <option value="">Alter</option>
+            <option value="false">No</option>
+            <option value="true">Yes</option>
           </select>
         </th>
-        <th class="px-2 text-center">
-          <select
-            bind:this={proxyDropdown}
-            class="appearance-none outline-none bg-indigo-800"
-            on:change={changeAllProxies}
-          >
-            <option value="" selected disabled>Proxy</option>
-            <option value="TRUE">TRUE</option>
-            <option value="FALSE">FALSE</option>
+        <th class="px-2 py-1 text-left">
+          <select bind:this={proxyDropdown} onchange={changeAllProxies} class="bg-indigo-700 text-gray-200 rounded">
+            <option value="">Proxy</option>
+            <option value="false">No</option>
+            <option value="true">Yes</option>
           </select>
         </th>
-        <th class="px-2 text-center">
-          <select
-            bind:this={priceDropdown}
-            class="appearance-none outline-none bg-indigo-800"
-            on:change={changeAllPrices}
-          >
-            <option value="" selected disabled>Purchase Price</option>
-            <option value="Use Current Prices">Use Current Prices</option>
-            <option value="Remove Prices">Remove Prices</option>
+        <th class="px-2 py-1 text-left">
+          <select bind:this={priceDropdown} onchange={changeAllPrices} class="bg-indigo-700 text-gray-200 rounded">
+            <option value="auto">Price</option>
+            <option value="auto">Auto</option>
           </select>
         </th>
       </tr>
     </thead>
     <tbody>
       {#each cards as card, index (card.id)}
-        <tr>
-          <td class="px-2 text-center">
+        <tr class="border-b border-gray-600">
+          <td class="px-2 py-1">
             <input
-              type="text"
-              class="w-12 border-0 bg-transparent text-center outline-none text-gray-200"
-              bind:value={card.count}
-              on:keydown={(event) => updateCard(index, 'count', event)}
+              type="number"
+              min="1"
+              max="99"
+              value={card.count}
+              onchange={(e) => updateCard(index, 'count', e.currentTarget.value)}
+              class="w-16 px-1 py-1 text-gray-800 rounded"
             />
           </td>
-          <td class="px-2 text-center underline"
-            ><Card bind:card displayMode="CSV" /></td
-          >
-          <td class="px-2 text-center uppercase">{card.set}</td>
-          <td class="px-2 text-center">
+          <td class="px-2 py-1">
+            <Card {card} displayMode="CSV" onupdate={handleCardUpdate} />
+          </td>
+          <td class="px-2 py-1">{card.set.toUpperCase()}</td>
+          <td class="px-2 py-1">
             <select
-              class="appearance-none outline-none bg-indigo-900"
-              bind:value={card.condition}
-              on:change={(event) =>
-                updateCard(index, 'condition', event.target.value)}
+              value={card.condition}
+              onchange={(e) => updateCard(index, 'condition', e)}
+              class="bg-indigo-700 text-gray-200 rounded px-1 py-1"
             >
-              {#each Object.entries(conditions) as [code, condition]}
-                <option value={code}>{condition}</option>
+              {#each Object.entries(conditions) as [key, value]}
+                <option value={key}>{value}</option>
               {/each}
             </select>
           </td>
-          <td class="px-2 text-center">
+          <td class="px-2 py-1">
             <select
-              class="appearance-none outline-none bg-indigo-900"
-              bind:value={card.language}
-              on:change={(event) =>
-                updateCard(index, 'language', event.target.value)}
+              value={card.language}
+              onchange={(e) => updateCard(index, 'language', e)}
+              class="bg-indigo-700 text-gray-200 rounded px-1 py-1"
             >
-              {#each Object.entries(languages) as [code, language]}
-                <option value={code}>{language}</option>
+              {#each Object.entries(languages) as [key, value]}
+                <option value={key}>{value}</option>
               {/each}
             </select>
           </td>
-          <td class="px-2 text-center">
+          <td class="px-2 py-1">
             <select
-              class="appearance-none outline-none bg-indigo-900"
-              bind:value={card.selectedFinish}
-              on:change={(event) => changeFinish(index, event)}
+              value={card.selectedFinish}
+              onchange={(e) => changeFinish(index, e)}
+              class="bg-indigo-700 text-gray-200 rounded px-1 py-1"
             >
-              {#each finishes as finish}
-                {#if card.finishes.includes(finish)}
-                  <option value={finish}>{finish}</option>
-                {/if}
-              {/each}
+              <option value="">Normal</option>
+              {#if card.finishes.includes('foil')}
+                <option value="foil">Foil</option>
+              {/if}
+              {#if card.finishes.includes('etched')}
+                <option value="etched">Etched</option>
+              {/if}
             </select>
           </td>
-          <td class="px-2 text-center">{card.collector_number}</td>
-          <td
-            class="px-2 text-center uppercase cursor-pointer"
-            on:click={() => toggleStatus(index, 'alter')}>{card.alter}</td
-          >
-          <td
-            class="px-2 text-center uppercase cursor-pointer"
-            on:click={() => toggleStatus(index, 'proxy')}>{card.proxy}</td
-          >
-          <td class="px-2 text-center">
+          <td class="px-2 py-1">
             <input
-              type="text"
-              class="w-28 border-0 bg-transparent text-center outline-none text-gray-200"
-              bind:value={card.displayedPrice}
-              on:keydown={(event) => updatePrice(index, event)}
+              type="checkbox"
+              checked={card.alter}
+              onchange={() => toggleStatus(index, 'alter')}
+              class="rounded"
+            />
+          </td>
+          <td class="px-2 py-1">
+            <input
+              type="checkbox"
+              checked={card.proxy}
+              onchange={() => toggleStatus(index, 'proxy')}
+              class="rounded"
+            />
+          </td>
+          <td class="px-2 py-1">
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={card.price || ''}
+              onchange={(e) => updatePrice(index, e)}
+              class="w-20 px-1 py-1 text-gray-800 rounded"
+              placeholder="Auto"
             />
           </td>
         </tr>
@@ -482,8 +470,8 @@
   </table>
 </div>
 <button
-  on:click={downloadCSV}
+  onclick={downloadCSV}
   class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 >
-  Download
+  Download CSV
 </button>
