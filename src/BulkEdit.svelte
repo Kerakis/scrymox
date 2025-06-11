@@ -1,10 +1,11 @@
 <script>
   import Card from './Card.svelte';
-  export let cards = [];
-  let isCopyButtonDisabled = false;
-  let copyButtonText = 'Copy';
-  let downloadButtonText = 'Download';
-  let downloadLink = '';
+  
+  let { cards = [], onupdate } = $props();
+  let isCopyButtonDisabled = $state(false);
+  let copyButtonText = $state('Copy');
+  let downloadButtonText = $state('Download');
+  let downloadLink = $state('');
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(
@@ -46,9 +47,9 @@
     }, 5000);
   };
 
-  let download = originalDownload;
+  let download = $state(originalDownload);
 
-  $: {
+  $effect(() => {
     const text = cards
       .map(
         (card) =>
@@ -57,27 +58,33 @@
       .join('\n');
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     downloadLink = URL.createObjectURL(blob);
-  }
+  });
+
+  const handleCardUpdate = (updatedCard) => {
+    if (onupdate) {
+      onupdate(updatedCard);
+    }
+  };
 </script>
 
 <div
   class="cards text-gray-200 border border-gray-500 rounded-md mt-4 overflow-auto h-64"
 >
   {#each cards as card (card.id)}
-    <Card bind:card />
+    <Card {card} onupdate={handleCardUpdate} />
   {/each}
 </div>
 {#if cards.length > 0}
   <button
-    on:click={copyToClipboard}
+    onclick={copyToClipboard}
     disabled={isCopyButtonDisabled}
-    class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
   >
     {copyButtonText}
   </button>
   <button
-    on:click={download}
-    class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    onclick={download}
+    class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
   >
     {downloadButtonText}
   </button>
