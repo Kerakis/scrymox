@@ -10,13 +10,13 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.1.0",
-    "autoprefixer": "^10.4.19",
+    "@tailwindcss/postcss": "^4.1.8",
     "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3",
+    "tailwindcss": "^4.1.8",
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "svelte-device-info": "^1.0.4",
-    "svelte": "^5.0.0"
+    "svelte": "^5.0.0",
+    "svelte-device-info": "^1.0.4"
   }
 }

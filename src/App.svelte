@@ -175,15 +175,15 @@
   };
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-700 py-6 flex flex-col justify-center sm:py-12">
+<div class="min-h-screen bg-linear-to-b from-indigo-500 via-purple-500 to-pink-700 py-6 flex flex-col justify-center sm:py-12">
   <div class="max-w-7xl mx-auto">
     <div class="relative py-3 mx-auto">
-      <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-light-purple-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
+      <div class="absolute inset-0 bg-linear-to-r from-purple-400 to-light-purple-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
       <div class="relative px-4 py-10 bg-indigo-900 shadow-lg sm:rounded-3xl sm:p-20">
         <div class="mx-auto">
           <button
             onclick={() => (tipsModal = true)}
-            class="absolute top-0 right-0 mt-4 mr-4 w-8 h-8 font-serif flex items-center justify-center border border-transparent shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full"
+            class="absolute top-0 right-0 mt-4 mr-4 w-8 h-8 font-serif flex items-center justify-center border border-transparent shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full"
           >
             i
           </button>
@@ -250,7 +250,7 @@
             />
             <button
               type="submit"
-              class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Search
             </button>
@@ -258,7 +258,7 @@
           
           <button
             onclick={() => (optionsModal = true)}
-            class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Default Query Options
           </button>
@@ -307,7 +307,7 @@
                   selectedTab = 'Bulk Edit';
                   saveSelectedTab();
                 }}
-                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-l-md shadow-sm text-sm font-medium text-gray-200 {selectedTab === 'Bulk Edit' ? 'bg-indigo-700' : 'bg-indigo-600'} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-l-md shadow-xs text-sm font-medium text-gray-200 {selectedTab === 'Bulk Edit' ? 'bg-indigo-700' : 'bg-indigo-600'} hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Bulk Edit
               </button>
@@ -316,7 +316,7 @@
                   selectedTab = 'CSV';
                   saveSelectedTab();
                 }}
-                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-r-md shadow-sm text-sm font-medium text-gray-200 {selectedTab === 'CSV' ? 'bg-indigo-700' : 'bg-indigo-600'} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-r-md shadow-xs text-sm font-medium text-gray-200 {selectedTab === 'CSV' ? 'bg-indigo-700' : 'bg-indigo-600'} hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 CSV
               </button>
@@ -334,7 +334,7 @@
       </div>
     </div>
     
-    <footer class="flex-shrink-0 mt-8 text-sm text-gray-200 text-center lg:fixed lg:m-1 lg:bottom-0 lg:right-1">
+    <footer class="shrink-0 mt-8 text-sm text-gray-200 text-center lg:fixed lg:m-1 lg:bottom-0 lg:right-1">
       <p>
         Made with <span class="font-sans">&#9749;</span> by
         <a href="https://github.com/Kerakis" target="_blank" rel="noopener noreferrer">

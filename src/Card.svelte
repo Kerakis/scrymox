@@ -200,14 +200,14 @@
         <h2 class="text-lg font-semibold mb-2">{card.name}</h2>
         <button
           onclick={() => handleFinishSelection('foil')}
-          class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Foil
         </button>
 
         <button
           onclick={() => handleFinishSelection('etched')}
-          class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Etched
         </button>
@@ -221,7 +221,7 @@
         bind:this={cardImageFront}
         src={cardImageFrontSrc}
         alt={`${card.name} front`}
-        class="rounded hidden fixed max-w-[250px] z-50"
+        class="rounded-sm hidden fixed max-w-[250px] z-50"
       />
     {/if}
     {#if card.image_uris.length > 1 && card.image_uris[1] && card.image_uris[1].border_crop}
@@ -229,7 +229,7 @@
         bind:this={cardImageBack}
         src={cardImageBackSrc}
         alt={`${card.name} back`}
-        class="rounded hidden fixed max-w-[250px] z-50"
+        class="rounded-sm hidden fixed max-w-[250px] z-50"
       />
     {/if}
   {:else if card.image_uris && card.image_uris.border_crop}
@@ -237,7 +237,7 @@
       bind:this={cardImageFront}
       src={cardImageFrontSrc}
       alt={card.name}
-      class="rounded hidden fixed max-w-[250px] z-50"
+      class="rounded-sm hidden fixed max-w-[250px] z-50"
     />
   {/if}
 </div>

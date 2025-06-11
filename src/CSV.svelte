@@ -326,9 +326,9 @@
                   min="1"
                   max="99"
                   placeholder="Count"
-                  class="px-2 py-1 rounded text-gray-800"
+                  class="px-2 py-1 rounded-sm text-gray-800"
                 />
-                <button onclick={changeAllCounts} class="ml-2 px-2 py-1 bg-indigo-600 rounded">
+                <button onclick={changeAllCounts} class="ml-2 px-2 py-1 bg-indigo-600 rounded-sm">
                   Apply to All
                 </button>
               </div>
@@ -338,7 +338,7 @@
         <th class="px-2 py-1 text-left">Name</th>
         <th class="px-2 py-1 text-left">Edition</th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={conditionDropdown} onchange={changeAllConditions} class="bg-indigo-700 text-gray-200 rounded">
+          <select bind:this={conditionDropdown} onchange={changeAllConditions} class="bg-indigo-700 text-gray-200 rounded-sm">
             <option value="">Condition</option>
             {#each Object.entries(conditions) as [key, value]}
               <option value={key}>{value}</option>
@@ -346,7 +346,7 @@
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={languageDropdown} onchange={changeAllLanguages} class="bg-indigo-700 text-gray-200 rounded">
+          <select bind:this={languageDropdown} onchange={changeAllLanguages} class="bg-indigo-700 text-gray-200 rounded-sm">
             <option value="">Language</option>
             {#each Object.entries(languages) as [key, value]}
               <option value={key}>{value}</option>
@@ -354,7 +354,7 @@
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={foilDropdown} onchange={changeAllFinishes} class="bg-indigo-700 text-gray-200 rounded">
+          <select bind:this={foilDropdown} onchange={changeAllFinishes} class="bg-indigo-700 text-gray-200 rounded-sm">
             <option value="">Finish</option>
             <option value="">Normal</option>
             <option value="foil">Foil</option>
@@ -362,21 +362,21 @@
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={alterDropdown} onchange={changeAllAlters} class="bg-indigo-700 text-gray-200 rounded">
+          <select bind:this={alterDropdown} onchange={changeAllAlters} class="bg-indigo-700 text-gray-200 rounded-sm">
             <option value="">Alter</option>
             <option value="false">No</option>
             <option value="true">Yes</option>
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={proxyDropdown} onchange={changeAllProxies} class="bg-indigo-700 text-gray-200 rounded">
+          <select bind:this={proxyDropdown} onchange={changeAllProxies} class="bg-indigo-700 text-gray-200 rounded-sm">
             <option value="">Proxy</option>
             <option value="false">No</option>
             <option value="true">Yes</option>
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={priceDropdown} onchange={changeAllPrices} class="bg-indigo-700 text-gray-200 rounded">
+          <select bind:this={priceDropdown} onchange={changeAllPrices} class="bg-indigo-700 text-gray-200 rounded-sm">
             <option value="auto">Price</option>
             <option value="auto">Auto</option>
           </select>
@@ -393,7 +393,7 @@
               max="99"
               value={card.count}
               onchange={(e) => updateCard(index, 'count', e.currentTarget.value)}
-              class="w-16 px-1 py-1 text-gray-800 rounded"
+              class="w-16 px-1 py-1 text-gray-800 rounded-sm"
             />
           </td>
           <td class="px-2 py-1">
@@ -404,7 +404,7 @@
             <select
               value={card.condition}
               onchange={(e) => updateCard(index, 'condition', e)}
-              class="bg-indigo-700 text-gray-200 rounded px-1 py-1"
+              class="bg-indigo-700 text-gray-200 rounded-sm px-1 py-1"
             >
               {#each Object.entries(conditions) as [key, value]}
                 <option value={key}>{value}</option>
@@ -415,7 +415,7 @@
             <select
               value={card.language}
               onchange={(e) => updateCard(index, 'language', e)}
-              class="bg-indigo-700 text-gray-200 rounded px-1 py-1"
+              class="bg-indigo-700 text-gray-200 rounded-sm px-1 py-1"
             >
               {#each Object.entries(languages) as [key, value]}
                 <option value={key}>{value}</option>
@@ -426,7 +426,7 @@
             <select
               value={card.selectedFinish}
               onchange={(e) => changeFinish(index, e)}
-              class="bg-indigo-700 text-gray-200 rounded px-1 py-1"
+              class="bg-indigo-700 text-gray-200 rounded-sm px-1 py-1"
             >
               <option value="">Normal</option>
               {#if card.finishes.includes('foil')}
@@ -442,7 +442,7 @@
               type="checkbox"
               checked={card.alter}
               onchange={() => toggleStatus(index, 'alter')}
-              class="rounded"
+              class="rounded-sm"
             />
           </td>
           <td class="px-2 py-1">
@@ -450,7 +450,7 @@
               type="checkbox"
               checked={card.proxy}
               onchange={() => toggleStatus(index, 'proxy')}
-              class="rounded"
+              class="rounded-sm"
             />
           </td>
           <td class="px-2 py-1">
@@ -460,7 +460,7 @@
               min="0"
               value={card.price || ''}
               onchange={(e) => updatePrice(index, e)}
-              class="w-20 px-1 py-1 text-gray-800 rounded"
+              class="w-20 px-1 py-1 text-gray-800 rounded-sm"
               placeholder="Auto"
             />
           </td>
@@ -471,7 +471,7 @@
 </div>
 <button
   onclick={downloadCSV}
-  class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+  class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-xs text-sm font-medium text-gray-200 bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 >
   Download CSV
 </button>
