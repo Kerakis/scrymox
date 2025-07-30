@@ -295,9 +295,9 @@
           card.condition,
           card.language,
           card.selectedFinish === 'foil'
-            ? 'Foil'
+            ? 'foil'
             : card.selectedFinish === 'etched'
-              ? 'Etched'
+              ? 'etched'
               : '',
           card.alter ? 'Yes' : '',
           card.proxy ? 'Yes' : '',
@@ -343,7 +343,7 @@
                   min="1"
                   max="99"
                   placeholder="Count"
-                  class="px-2 py-1 rounded-sm text-gray-800"
+                  class="px-2 py-1 rounded-sm text-gray-200"
                 />
                 <button
                   onclick={changeAllCounts}
@@ -388,7 +388,7 @@
             class="bg-indigo-700 text-gray-200 rounded-sm"
           >
             <option value="">Finish</option>
-            <option value="">Normal</option>
+            <option value="">Non-foil</option>
             <option value="foil">Foil</option>
             <option value="etched">Etched</option>
           </select>
@@ -438,7 +438,7 @@
               value={card.count}
               onchange={(e) =>
                 updateCard(index, 'count', e.currentTarget.value)}
-              class="w-16 px-1 py-1 text-gray-800 rounded-sm"
+              class="w-16 px-1 py-1 text-gray-200 rounded-sm"
             />
           </td>
           <td class="px-2 py-1">
@@ -473,7 +473,7 @@
               onchange={(e) => changeFinish(index, e)}
               class="bg-indigo-700 text-gray-200 rounded-sm px-1 py-1"
             >
-              <option value="">Normal</option>
+              <option value="">Non-foil</option>
               {#if card.finishes.includes('foil')}
                 <option value="foil">Foil</option>
               {/if}
@@ -505,7 +505,7 @@
               min="0"
               value={card.price || ''}
               onchange={(e) => updatePrice(index, e)}
-              class="w-20 px-1 py-1 text-gray-800 rounded-sm"
+              class="w-20 px-1 py-1 text-gray-200 rounded-sm"
               placeholder="Auto"
             />
           </td>
