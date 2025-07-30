@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import Card from './Card.svelte';
-  
+
   let { cards = [], onupdate } = $props();
   let countInput = $state();
   let languageDropdown = $state();
@@ -263,7 +263,7 @@
   // Handle card updates from the Card component in CSV mode
   const handleCardUpdate = (updatedCard) => {
     let updatedCards = [...cards];
-    const cardIndex = updatedCards.findIndex(c => c.id === updatedCard.id);
+    const cardIndex = updatedCards.findIndex((c) => c.id === updatedCard.id);
     if (cardIndex !== -1) {
       updatedCards[cardIndex] = updatedCard;
       if (onupdate) {
@@ -274,19 +274,36 @@
 
   const downloadCSV = () => {
     const csvContent = [
-      ['Count', 'Name', 'Edition', 'Card Number', 'Condition', 'Language', 'Foil', 'Alter', 'Proxy', 'Price'].join(','),
-      ...cards.map(card => [
-        card.count,
-        `"${card.name}"`,
-        card.set.toUpperCase(),
-        card.collector_number,
-        card.condition,
-        card.language,
-        card.selectedFinish === 'foil' ? 'Foil' : (card.selectedFinish === 'etched' ? 'Etched' : ''),
-        card.alter ? 'Yes' : '',
-        card.proxy ? 'Yes' : '',
-        card.price || ''
-      ].join(','))
+      [
+        'Count',
+        'Name',
+        'Edition',
+        'Collector Number',
+        'Condition',
+        'Language',
+        'Foil',
+        'Alter',
+        'Proxy',
+        'Price',
+      ].join(','),
+      ...cards.map((card) =>
+        [
+          card.count,
+          `"${card.name}"`,
+          card.set.toUpperCase(),
+          card.collector_number,
+          card.condition,
+          card.language,
+          card.selectedFinish === 'foil'
+            ? 'Foil'
+            : card.selectedFinish === 'etched'
+              ? 'Etched'
+              : '',
+          card.alter ? 'Yes' : '',
+          card.proxy ? 'Yes' : '',
+          card.price || '',
+        ].join(',')
+      ),
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -328,7 +345,10 @@
                   placeholder="Count"
                   class="px-2 py-1 rounded-sm text-gray-800"
                 />
-                <button onclick={changeAllCounts} class="ml-2 px-2 py-1 bg-indigo-600 rounded-sm">
+                <button
+                  onclick={changeAllCounts}
+                  class="ml-2 px-2 py-1 bg-indigo-600 rounded-sm"
+                >
                   Apply to All
                 </button>
               </div>
@@ -338,7 +358,11 @@
         <th class="px-2 py-1 text-left">Name</th>
         <th class="px-2 py-1 text-left">Edition</th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={conditionDropdown} onchange={changeAllConditions} class="bg-indigo-700 text-gray-200 rounded-sm">
+          <select
+            bind:this={conditionDropdown}
+            onchange={changeAllConditions}
+            class="bg-indigo-700 text-gray-200 rounded-sm"
+          >
             <option value="">Condition</option>
             {#each Object.entries(conditions) as [key, value]}
               <option value={key}>{value}</option>
@@ -346,7 +370,11 @@
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={languageDropdown} onchange={changeAllLanguages} class="bg-indigo-700 text-gray-200 rounded-sm">
+          <select
+            bind:this={languageDropdown}
+            onchange={changeAllLanguages}
+            class="bg-indigo-700 text-gray-200 rounded-sm"
+          >
             <option value="">Language</option>
             {#each Object.entries(languages) as [key, value]}
               <option value={key}>{value}</option>
@@ -354,7 +382,11 @@
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={foilDropdown} onchange={changeAllFinishes} class="bg-indigo-700 text-gray-200 rounded-sm">
+          <select
+            bind:this={foilDropdown}
+            onchange={changeAllFinishes}
+            class="bg-indigo-700 text-gray-200 rounded-sm"
+          >
             <option value="">Finish</option>
             <option value="">Normal</option>
             <option value="foil">Foil</option>
@@ -362,21 +394,33 @@
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={alterDropdown} onchange={changeAllAlters} class="bg-indigo-700 text-gray-200 rounded-sm">
+          <select
+            bind:this={alterDropdown}
+            onchange={changeAllAlters}
+            class="bg-indigo-700 text-gray-200 rounded-sm"
+          >
             <option value="">Alter</option>
             <option value="false">No</option>
             <option value="true">Yes</option>
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={proxyDropdown} onchange={changeAllProxies} class="bg-indigo-700 text-gray-200 rounded-sm">
+          <select
+            bind:this={proxyDropdown}
+            onchange={changeAllProxies}
+            class="bg-indigo-700 text-gray-200 rounded-sm"
+          >
             <option value="">Proxy</option>
             <option value="false">No</option>
             <option value="true">Yes</option>
           </select>
         </th>
         <th class="px-2 py-1 text-left">
-          <select bind:this={priceDropdown} onchange={changeAllPrices} class="bg-indigo-700 text-gray-200 rounded-sm">
+          <select
+            bind:this={priceDropdown}
+            onchange={changeAllPrices}
+            class="bg-indigo-700 text-gray-200 rounded-sm"
+          >
             <option value="auto">Price</option>
             <option value="auto">Auto</option>
           </select>
@@ -392,7 +436,8 @@
               min="1"
               max="99"
               value={card.count}
-              onchange={(e) => updateCard(index, 'count', e.currentTarget.value)}
+              onchange={(e) =>
+                updateCard(index, 'count', e.currentTarget.value)}
               class="w-16 px-1 py-1 text-gray-800 rounded-sm"
             />
           </td>
