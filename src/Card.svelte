@@ -42,7 +42,7 @@
       showImageModal = true;
     } else {
       let updatedCard = { ...card };
-      
+
       if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
         if (
           card.finishes.includes('foil') &&
@@ -82,7 +82,7 @@
           }
         }
       }
-      
+
       if (onupdate) onupdate(updatedCard);
     }
   };
@@ -117,7 +117,7 @@
 
   const handleFinishSelection = (finish) => {
     let updatedCard = { ...card };
-    
+
     if (finish === 'foil') {
       updatedCard.displayFinish = '*F*';
       updatedCard.selectedFinish = 'foil';
@@ -131,7 +131,7 @@
         updatedCard.displayedPrice = updatedCard.prices.usd_etched;
       }
     }
-    
+
     finishModal = false;
     if (onupdate) onupdate(updatedCard);
   };
@@ -214,14 +214,14 @@
       </div>
     </div>
   {/if}
-  
+
   {#if Array.isArray(card.image_uris)}
     {#if card.image_uris[0] && card.image_uris[0].border_crop}
       <img
         bind:this={cardImageFront}
         src={cardImageFrontSrc}
         alt={`${card.name} front`}
-        class="rounded-sm hidden fixed max-w-[250px] z-50"
+        class="rounded-sm hidden fixed max-w-62.5 z-50"
       />
     {/if}
     {#if card.image_uris.length > 1 && card.image_uris[1] && card.image_uris[1].border_crop}
@@ -229,7 +229,7 @@
         bind:this={cardImageBack}
         src={cardImageBackSrc}
         alt={`${card.name} back`}
-        class="rounded-sm hidden fixed max-w-[250px] z-50"
+        class="rounded-sm hidden fixed max-w-62.5 z-50"
       />
     {/if}
   {:else if card.image_uris && card.image_uris.border_crop}
@@ -237,7 +237,7 @@
       bind:this={cardImageFront}
       src={cardImageFrontSrc}
       alt={card.name}
-      class="rounded-sm hidden fixed max-w-[250px] z-50"
+      class="rounded-sm hidden fixed max-w-62.5 z-50"
     />
   {/if}
 </div>
