@@ -16,7 +16,7 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "svelte": "^5.53.6",
+    "svelte": "^5.55.1",
     "svelte-device-info": "^1.0.6"
   }
 }
