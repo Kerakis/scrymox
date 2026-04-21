@@ -15,7 +15,7 @@
 		"@eslint/eslintrc": "^3.3.5",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/postcss": "^4.2.1",
-		"eslint": "^10.2.0",
+		"eslint": "^10.2.1",
 		"postcss": "^8.5.9",
 		"prettier": "^3.8.2",
 		"prettier-plugin-svelte": "^3.5.1",
