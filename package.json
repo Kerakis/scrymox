@@ -21,7 +21,7 @@
 		"prettier-plugin-svelte": "^3.5.1",
 		"svelte-eslint-parser": "^1.6.0",
 		"tailwindcss": "^4.2.2",
-		"vite": "^8.0.0"
+		"vite": "^8.0.9"
 	},
 	"dependencies": {
 		"prettier-plugin-tailwindcss": "^0.7.2",
