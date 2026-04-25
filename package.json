@@ -15,13 +15,13 @@
 		"@eslint/eslintrc": "^3.3.5",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/postcss": "^4.2.1",
-		"eslint": "^10.2.0",
-		"postcss": "^8.5.9",
-		"prettier": "^3.8.2",
+		"eslint": "^10.2.1",
+		"postcss": "^8.5.10",
+		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.5.1",
 		"svelte-eslint-parser": "^1.6.0",
-		"tailwindcss": "^4.2.2",
-		"vite": "^8.0.0"
+		"tailwindcss": "^4.2.4",
+		"vite": "^8.0.9"
 	},
 	"dependencies": {
 		"prettier-plugin-tailwindcss": "^0.7.2",
