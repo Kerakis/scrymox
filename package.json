@@ -13,19 +13,19 @@
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.5",
-		"@sveltejs/vite-plugin-svelte": "^7.0.0",
-		"@tailwindcss/postcss": "^4.2.1",
-		"eslint": "^10.2.1",
-		"postcss": "^8.5.10",
-		"prettier": "^3.8.3",
-		"prettier-plugin-svelte": "^3.5.1",
-		"svelte-eslint-parser": "^1.6.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/postcss": "^4.3.0",
+		"eslint": "^10.4.1",
+		"postcss": "^8.5.15",
+		"prettier": "^3.8.4",
+		"prettier-plugin-svelte": "^4.1.0",
+		"svelte-eslint-parser": "^1.8.0",
 		"tailwindcss": "^4.2.4",
-		"vite": "^8.0.9"
+		"vite": "^8.0.16"
 	},
 	"dependencies": {
-		"prettier-plugin-tailwindcss": "^0.7.2",
-		"svelte": "^5.55.4",
+		"prettier-plugin-tailwindcss": "^0.8.0",
+		"svelte": "^5.56.3",
 		"svelte-device-info": "^1.0.6"
 	}
 }
