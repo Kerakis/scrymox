@@ -31,7 +31,6 @@
 	},
 	"dependencies": {
 		"prettier-plugin-tailwindcss": "^0.8.0",
-		"svelte": "^5.56.3",
-		"svelte-device-info": "^1.0.6"
+		"svelte": "^5.56.3"
 	}
 }

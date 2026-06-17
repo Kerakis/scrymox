@@ -66,14 +66,12 @@ describe('normalizeCard', () => {
 		const card = normalizeCard(base);
 		expect(card.selectedFinish).toBe('');
 		expect(card.displayFinish).toBe('');
-		expect(card.displayedPrice).toBe('1.00');
 	});
 
 	it('defaults a foil-only card to foil and its foil price', () => {
 		const card = normalizeCard({ ...base, finishes: ['foil'] });
 		expect(card.selectedFinish).toBe('foil');
 		expect(card.displayFinish).toBe('*F*');
-		expect(card.displayedPrice).toBe('2.00');
 	});
 
 	it('keeps single image_uris for a single-faced card', () => {

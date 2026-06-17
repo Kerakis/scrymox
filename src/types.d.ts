@@ -90,10 +90,8 @@ export interface Card {
 	alter: boolean;
 	proxy: boolean;
 	prices: CardPrices;
-	/** User-entered price override (CSV view). */
+	/** User-entered price override. */
 	price?: number;
-	/** Price derived from the selected finish. */
-	displayedPrice?: string | null;
 	/** True once the user has typed a price manually. */
 	priceManuallySet?: boolean;
 }

@@ -1,4 +1,4 @@
-import { getDefaultFinish, getDisplayFinish, getFinishPrice } from './finishes.js';
+import { getDefaultFinish, getDisplayFinish } from './finishes.js';
 import { requestQueue } from './requestQueue.js';
 
 const SEARCH_ENDPOINT = 'https://api.scryfall.com/cards/search';
@@ -63,9 +63,6 @@ export const normalizeCard = (scryfallCard, source = 'tcgplayer') => {
 		alter: false,
 		proxy: false,
 		prices: scryfallCard.prices,
-		// Transitional: kept so existing components keep rendering until Plan 02
-		// switches them to live getPrice(prices, source, finish).
-		displayedPrice: getFinishPrice(scryfallCard.prices, selectedFinish),
 		priceManuallySet: false
 	};
 };

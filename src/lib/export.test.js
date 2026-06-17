@@ -16,7 +16,6 @@ const makeCard = (overrides = {}) => ({
 	alter: false,
 	proxy: false,
 	prices: { usd: '1.00' },
-	displayedPrice: '1.00',
 	priceManuallySet: false,
 	...overrides
 });
