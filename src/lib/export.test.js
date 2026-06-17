@@ -41,11 +41,11 @@ describe('buildCsv', () => {
 	it('emits the Moxfield header row ending with Scryfall ID', () => {
 		const [header] = buildCsv([makeCard()]).split('\n');
 		expect(header).toBe(
-			'Count,Name,Edition,Collector Number,Condition,Language,Foil,Alter,Proxy,Price,Scryfall ID'
+			'Count,Name,Edition,Collector Number,Condition,Language,Foil,Alter,Proxy,Purchase Price,Scryfall ID'
 		);
 	});
 
-	it('uppercases the edition, maps finish/alter/proxy, and appends the Scryfall id', () => {
+	it('uppercases the edition, maps finish, writes TRUE/FALSE alter/proxy, and appends the id', () => {
 		const [, row] = buildCsv([
 			makeCard({
 				id: 'sid-1',
@@ -55,7 +55,7 @@ describe('buildCsv', () => {
 				prices: { usd: '1.00', usd_foil: '2.00' }
 			})
 		]).split('\n');
-		expect(row).toBe('1,"Lightning Bolt",LEA,161,NM,EN,foil,Yes,,2.00,sid-1');
+		expect(row).toBe('1,"Lightning Bolt",LEA,161,NM,EN,foil,TRUE,FALSE,2.00,sid-1');
 	});
 
 	it('escapes embedded quotes in card names per CSV rules', () => {

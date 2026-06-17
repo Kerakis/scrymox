@@ -5,6 +5,20 @@ const SEARCH_ENDPOINT = 'https://api.scryfall.com/cards/search';
 const ACCEPT = 'application/json;q=0.9,*/*;q=0.8';
 
 /**
+ * Layouts whose two faces each carry their own image (`card_faces[].image_uris`).
+ * Every other layout — including split/flip/adventure — renders a single
+ * combined image at the card's top-level `image_uris`.
+ * @see https://scryfall.com/docs/api/layouts
+ */
+const DOUBLE_FACED_LAYOUTS = new Set([
+	'transform',
+	'modal_dfc',
+	'double_faced_token',
+	'reversible_card',
+	'art_series'
+]);
+
+/**
  * Builds a Scryfall `/cards/search` URL from the user's query plus any saved
  * default options.
  * @param {string} query
@@ -33,15 +47,13 @@ export const normalizeCard = (scryfallCard, source = 'tcgplayer') => {
 	let image_uris;
 	let name = scryfallCard.name;
 
-	if (!faces) {
-		image_uris = scryfallCard.image_uris;
-	} else if (scryfallCard.layout !== 'split' && scryfallCard.layout !== 'flip') {
+	if (faces && DOUBLE_FACED_LAYOUTS.has(scryfallCard.layout)) {
 		image_uris = [faces[0]?.image_uris, faces[1]?.image_uris];
 		if (scryfallCard.layout === 'reversible_card' && faces.length) {
 			name = faces[0].name;
 		}
 	} else {
-		image_uris = scryfallCard.image_uris ?? faces[0]?.image_uris;
+		image_uris = scryfallCard.image_uris ?? faces?.[0]?.image_uris;
 	}
 
 	return {

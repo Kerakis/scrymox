@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { priceKey, getPrice, PRICE_SOURCES } from './prices.js';
+import { priceKey, getPrice, formatPrice, PRICE_SOURCES } from './prices.js';
 
 test('priceKey maps source + finish to the Scryfall key', () => {
 	expect(priceKey('tcgplayer', '')).toBe('usd');
@@ -20,4 +20,12 @@ test('getPrice returns the value or null when missing', () => {
 
 test('PRICE_SOURCES lists the three affiliates', () => {
 	expect(Object.keys(PRICE_SOURCES)).toEqual(['tcgplayer', 'cardmarket', 'cardhoarder']);
+});
+
+test('formatPrice adds the source currency symbol', () => {
+	expect(formatPrice('3.41', 'tcgplayer')).toBe('$3.41');
+	expect(formatPrice('2.10', 'cardmarket')).toBe('€2.10');
+	expect(formatPrice('0.02', 'cardhoarder')).toBe('0.02 tix');
+	expect(formatPrice(null, 'tcgplayer')).toBeNull();
+	expect(formatPrice('', 'tcgplayer')).toBeNull();
 });

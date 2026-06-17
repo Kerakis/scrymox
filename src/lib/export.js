@@ -30,7 +30,7 @@ const CSV_HEADER = [
 	'Foil',
 	'Alter',
 	'Proxy',
-	'Price',
+	'Purchase Price',
 	'Scryfall ID'
 ];
 
@@ -67,8 +67,8 @@ export const buildCsv = (cards, source = 'tcgplayer') => {
 			card.condition,
 			card.language,
 			card.selectedFinish === 'foil' || card.selectedFinish === 'etched' ? card.selectedFinish : '',
-			card.alter ? 'Yes' : '',
-			card.proxy ? 'Yes' : '',
+			card.alter ? 'TRUE' : 'FALSE',
+			card.proxy ? 'TRUE' : 'FALSE',
 			exportPrice(card, source),
 			card.id
 		].join(',')

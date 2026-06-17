@@ -36,3 +36,23 @@ export const getPrice = (prices, source, finish) => {
 	if (!prices) return null;
 	return prices[priceKey(source, finish)] ?? null;
 };
+
+/** Currency display symbols, keyed by source. */
+const CURRENCY = {
+	tcgplayer: { symbol: '$', suffix: '' },
+	cardmarket: { symbol: '€', suffix: '' },
+	cardhoarder: { symbol: '', suffix: ' tix' }
+};
+
+/**
+ * Formats a price value for display with the source's currency symbol.
+ * Returns null when there is no value (callers render a placeholder).
+ * @param {string | number | null | undefined} value
+ * @param {PriceSource} source
+ * @returns {string | null}
+ */
+export const formatPrice = (value, source) => {
+	if (value == null || value === '') return null;
+	const { symbol, suffix } = CURRENCY[source];
+	return `${symbol}${value}${suffix}`;
+};

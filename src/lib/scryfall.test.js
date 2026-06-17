@@ -117,6 +117,30 @@ describe('normalizeCard', () => {
 		expect(card.name).toBe('Lightning Bolt');
 		expect(card.image_uris).toEqual({ border_crop: 'front.png' });
 	});
+
+	it('uses the top-level image for adventure cards that still have card_faces', () => {
+		const card = normalizeCard({
+			...base,
+			layout: 'adventure',
+			image_uris: { border_crop: 'combined.png' },
+			card_faces: [{ name: 'Creature' }, { name: 'Adventure' }]
+		});
+		// Faces carry no images for adventure — must fall back to the combined art.
+		expect(card.image_uris).toEqual({ border_crop: 'combined.png' });
+	});
+
+	it('collects both face images for a modal_dfc card', () => {
+		const card = normalizeCard({
+			...base,
+			image_uris: undefined,
+			layout: 'modal_dfc',
+			card_faces: [
+				{ name: 'Front', image_uris: { border_crop: 'f.png' } },
+				{ name: 'Back', image_uris: { border_crop: 'b.png' } }
+			]
+		});
+		expect(card.image_uris).toEqual([{ border_crop: 'f.png' }, { border_crop: 'b.png' }]);
+	});
 });
 
 describe('searchAllPages', () => {
