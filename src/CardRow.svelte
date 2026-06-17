@@ -1,5 +1,5 @@
 <script>
-	import { getPrice } from './lib/prices.js';
+	import { getPrice, formatPrice } from './lib/prices.js';
 	import { getDisplayFinish } from './lib/finishes.js';
 	import { CONDITIONS, LANGUAGES, FINISH_LABELS } from './lib/constants.js';
 
@@ -11,9 +11,10 @@
 	 *   onupdate?: (card: import('./types').Card) => void;
 	 *   onremove?: (id: string) => void;
 	 *   onselect?: (event: MouseEvent, id: string) => void;
+	 *   onhover?: (card: import('./types').Card) => void;
 	 * }}
 	 */
-	let { card, source, selected = false, onupdate, onremove, onselect } = $props();
+	let { card, source, selected = false, onupdate, onremove, onselect, onhover } = $props();
 	const finishOptions = $derived(
 		['', 'foil', 'etched'].filter((f) =>
 			f === '' ? card.finishes.includes('nonfoil') : card.finishes.includes(f)
@@ -23,7 +24,10 @@
 	const patch = (/** @type {Partial<import('./types').Card>} */ p) => onupdate?.({ ...card, ...p });
 </script>
 
-<tr class="border-b border-border {selected ? 'bg-accent/10' : ''}">
+<tr
+	class="border-b border-border {selected ? 'bg-accent/10' : ''}"
+	onmouseenter={() => onhover?.(card)}
+>
 	<td class="px-2 py-1">
 		<button
 			type="button"
@@ -47,7 +51,7 @@
 	</td>
 	<td class="max-w-[16rem] truncate px-2 py-1">{card.name}</td>
 	<td class="px-2 py-1 whitespace-nowrap text-muted"
-		>{card.set.toUpperCase()} {card.collector_number}</td
+		>{card.set.toUpperCase()} · CN {card.collector_number}</td
 	>
 	<td class="px-2 py-1">
 		<select
@@ -105,13 +109,13 @@
 			step="0.01"
 			min="0"
 			value={card.priceManuallySet ? (card.price ?? '') : ''}
-			placeholder={autoPrice ?? '—'}
+			placeholder={formatPrice(autoPrice, source) ?? '—'}
 			onchange={(e) =>
 				e.currentTarget.value === ''
 					? patch({ price: undefined, priceManuallySet: false })
 					: patch({ price: parseFloat(e.currentTarget.value), priceManuallySet: true })}
-			aria-label="Price override"
-			class="w-20 rounded bg-surface-2 px-1 text-text ring-1 ring-border"
+			aria-label="Purchase price override"
+			class="w-24 rounded bg-surface-2 px-1 text-text ring-1 ring-border"
 		/>
 	</td>
 	<td class="px-2 py-1"

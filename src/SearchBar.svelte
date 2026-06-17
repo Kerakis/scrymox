@@ -41,18 +41,19 @@
 			bind:value={query}
 			placeholder="Scryfall search query"
 			aria-label="Scryfall search query"
-			class="w-full rounded-md bg-white px-3 py-2 pr-10 text-gray-800 focus:outline-none"
+			class="w-full rounded-md bg-surface px-3 py-2 pr-10 text-text ring-1 ring-border focus:ring-2 focus:ring-accent focus:outline-none"
 		/>
 		<button
 			type="button"
 			onclick={() => (showHistory = !showHistory)}
 			aria-label="Toggle search history"
-			class="absolute inset-y-0 right-0 px-3 text-gray-500">{showHistory ? '▲' : '▼'}</button
+			class="absolute inset-y-0 right-0 px-3 text-muted hover:text-text"
+			>{showHistory ? '▲' : '▼'}</button
 		>
 
 		{#if showHistory && history.length > 0}
 			<ul
-				class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-surface text-text shadow-lg ring-1 ring-border"
+				class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-surface-2 text-text shadow-xl ring-1 ring-accent/40"
 				role="listbox"
 			>
 				{#each history as item (item)}

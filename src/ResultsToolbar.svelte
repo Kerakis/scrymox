@@ -5,6 +5,7 @@
 	 * @type {{
 	 *   totalCards: number; selectedCount: number;
 	 *   source?: import('./lib/prices').PriceSource; view?: 'gallery' | 'compact';
+	 *   refreshDisabled?: boolean;
 	 *   onrefresh?: () => void;
 	 * }}
 	 */
@@ -13,6 +14,7 @@
 		selectedCount,
 		source = $bindable('tcgplayer'),
 		view = $bindable('gallery'),
+		refreshDisabled = false,
 		onrefresh
 	} = $props();
 </script>
@@ -31,12 +33,14 @@
 		</select>
 	</label>
 
-	<Tooltip text="Refresh from Scryfall (also refreshes prices, max once/day)">
+	<Tooltip text="Refresh from Scryfall (re-fetches prices; rate-limited)">
 		<button
 			type="button"
 			onclick={onrefresh}
+			disabled={refreshDisabled}
 			aria-label="Refresh results"
-			class="rounded bg-accent/20 px-2 py-1">⟳</button
+			class="rounded bg-accent/20 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+			>⟳</button
 		>
 	</Tooltip>
 

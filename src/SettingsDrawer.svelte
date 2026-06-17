@@ -17,11 +17,6 @@
 		theme = $bindable('system'),
 		onthemechange
 	} = $props();
-	const cycle = () => {
-		const order = /** @type {import('./lib/theme').Theme[]} */ (['system', 'light', 'dark']);
-		theme = order[(order.indexOf(theme) + 1) % 3];
-		onthemechange?.(theme);
-	};
 </script>
 
 <Drawer bind:show title="Settings">
@@ -54,11 +49,16 @@
 			>{/each}
 	</select>
 
-	<span class="mb-1 block text-sm font-medium">Theme</span>
-	<button
-		type="button"
-		onclick={cycle}
-		class="rounded-md bg-accent px-4 py-2 text-sm text-accent-contrast"
-		>Theme: {theme} (click to change)</button
+	<label class="mb-1 block text-sm font-medium" for="theme-select">Theme</label>
+	<select
+		id="theme-select"
+		value={theme}
+		onchange={(e) =>
+			onthemechange?.(/** @type {import('./lib/theme').Theme} */ (e.currentTarget.value))}
+		class="w-full rounded-md bg-surface-2 px-3 py-2 text-text ring-1 ring-border"
 	>
+		<option value="system">System (match device)</option>
+		<option value="light">Light</option>
+		<option value="dark">Dark</option>
+	</select>
 </Drawer>

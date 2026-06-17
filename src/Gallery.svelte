@@ -8,9 +8,10 @@
 	 *   onupdate?: (card: import('./types').Card) => void;
 	 *   onremove?: (id: string) => void;
 	 *   onselect?: (event: MouseEvent, id: string) => void;
+	 *   onhover?: (card: import('./types').Card) => void;
 	 * }}
 	 */
-	let { cards, source, selectedIds, onupdate, onremove, onselect } = $props();
+	let { cards, source, selectedIds, onupdate, onremove, onselect, onhover } = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
@@ -22,6 +23,7 @@
 			{onupdate}
 			{onremove}
 			{onselect}
+			{onhover}
 		/>
 	{/each}
 </div>

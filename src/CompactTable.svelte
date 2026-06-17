@@ -8,20 +8,21 @@
 	 *   onupdate?: (card: import('./types').Card) => void;
 	 *   onremove?: (id: string) => void;
 	 *   onselect?: (event: MouseEvent, id: string) => void;
+	 *   onhover?: (card: import('./types').Card) => void;
 	 * }}
 	 */
-	let { cards, source, selectedIds, onupdate, onremove, onselect } = $props();
+	let { cards, source, selectedIds, onupdate, onremove, onselect, onhover } = $props();
 	const headers = [
 		'',
 		'Qty',
 		'Name',
-		'Set·#',
+		'Set · CN',
 		'Finish',
 		'Condition',
 		'Language',
 		'Alter',
 		'Proxy',
-		'Price',
+		'Purchase Price',
 		''
 	];
 </script>
@@ -42,6 +43,7 @@
 					{onupdate}
 					{onremove}
 					{onselect}
+					{onhover}
 				/>
 			{/each}
 		</tbody>

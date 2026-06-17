@@ -1,7 +1,7 @@
 <script>
 	import CardImage from './CardImage.svelte';
 	import Tooltip from './Tooltip.svelte';
-	import { getPrice } from './lib/prices.js';
+	import { getPrice, formatPrice } from './lib/prices.js';
 	import { getDisplayFinish } from './lib/finishes.js';
 	import { CONDITIONS, LANGUAGES, FINISH_LABELS } from './lib/constants.js';
 
@@ -13,9 +13,10 @@
 	 *   onupdate?: (card: import('./types').Card) => void;
 	 *   onremove?: (id: string) => void;
 	 *   onselect?: (event: MouseEvent, id: string) => void;
+	 *   onhover?: (card: import('./types').Card) => void;
 	 * }}
 	 */
-	let { card, source, selected = false, onupdate, onremove, onselect } = $props();
+	let { card, source, selected = false, onupdate, onremove, onselect, onhover } = $props();
 
 	const finishOptions = $derived(
 		['', 'foil', 'etched'].filter((f) =>
@@ -23,7 +24,7 @@
 		)
 	);
 	const autoPrice = $derived(getPrice(card.prices, source, card.selectedFinish));
-	const shownPrice = $derived(card.priceManuallySet ? card.price : autoPrice);
+	const shownPrice = $derived(formatPrice(card.priceManuallySet ? card.price : autoPrice, source));
 
 	const patch = (/** @type {Partial<import('./types').Card>} */ p) => onupdate?.({ ...card, ...p });
 	const setFinish = (/** @type {string} */ f) =>
@@ -42,7 +43,7 @@
 >
 	<!-- select / remove strip: above image on tile, inline on phone row -->
 	<div
-		class="order-2 flex shrink-0 flex-col items-center justify-between sm:order-none sm:flex-row sm:px-2 sm:py-1"
+		class="order-2 flex shrink-0 flex-col items-center justify-between sm:order-0 sm:flex-row sm:px-2 sm:py-1"
 	>
 		<button
 			type="button"
@@ -62,12 +63,12 @@
 		</Tooltip>
 	</div>
 
-	<div class="order-1 w-28 shrink-0 sm:order-none sm:w-full sm:px-2">
-		<CardImage {card} />
+	<div class="order-1 w-28 shrink-0 sm:order-0 sm:w-full sm:px-2">
+		<CardImage {card} onselect={(e) => onselect?.(e, card.id)} onhover={() => onhover?.(card)} />
 	</div>
 
 	<!-- footer controls: qty+price · finish · condition|language · alter|proxy -->
-	<div class="order-3 flex flex-1 flex-col gap-1.5 sm:order-none sm:p-2">
+	<div class="order-3 flex flex-1 flex-col gap-1.5 sm:order-0 sm:p-2">
 		<div class="flex items-center justify-between gap-2">
 			<span class="inline-flex overflow-hidden rounded-md border border-accent text-sm">
 				<button
@@ -93,7 +94,7 @@
 				>
 			</span>
 			<span class="text-sm font-semibold {shownPrice == null ? 'text-muted' : ''}">
-				{shownPrice == null ? '—' : shownPrice}
+				{shownPrice ?? '—'}
 			</span>
 		</div>
 
@@ -151,7 +152,7 @@
 			value={card.priceManuallySet ? (card.price ?? '') : ''}
 			placeholder={autoPrice ?? 'price'}
 			onchange={(e) => setPrice(e.currentTarget.value)}
-			aria-label="Price override"
+			aria-label="Purchase price override"
 			class="w-full rounded-md bg-surface-2 px-2 py-1 text-sm text-text ring-1 ring-border"
 		/>
 	</div>

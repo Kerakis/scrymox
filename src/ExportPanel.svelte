@@ -42,13 +42,12 @@
 				? 'bg-accent text-accent-contrast'
 				: 'bg-accent/20'}">CSV</button
 		>
-		<span class="ml-auto text-xs text-muted">live</span>
 	</div>
 	<textarea
 		readonly
 		value={text}
 		aria-label="Export preview"
-		class="min-h-40 flex-1 resize-none rounded bg-surface p-2 font-mono text-xs text-text ring-1 ring-border"
+		class="max-h-[50vh] min-h-40 flex-1 resize-y rounded bg-surface p-2 font-mono text-xs text-text ring-1 ring-border"
 	></textarea>
 	<div class="mt-2 flex gap-2">
 		<button
@@ -60,7 +59,8 @@
 		<button
 			type="button"
 			onclick={download}
-			class="flex-1 rounded-md bg-accent/20 px-3 py-2 text-sm">⬇ {filename}</button
+			title={`Download ${filename}`}
+			class="flex-1 rounded-md bg-accent/20 px-3 py-2 text-sm">⬇ Download</button
 		>
 	</div>
 </div>

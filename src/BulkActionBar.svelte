@@ -35,7 +35,9 @@
 			>Quantity ▾</button
 		>
 		{#if open === 'qty'}
-			<div class="absolute z-50 mt-1 rounded-md bg-surface p-2 shadow-lg ring-1 ring-border">
+			<div
+				class="absolute bottom-full z-50 mb-1 rounded-md bg-surface p-2 shadow-lg ring-1 ring-border"
+			>
 				<input
 					type="number"
 					min="1"
@@ -56,7 +58,7 @@
 		>
 		{#if open === 'finish'}
 			<div
-				class="absolute z-50 mt-1 flex flex-col rounded-md bg-surface p-1 shadow-lg ring-1 ring-border"
+				class="absolute bottom-full z-50 mb-1 flex flex-col rounded-md bg-surface p-1 shadow-lg ring-1 ring-border"
 			>
 				{#each Object.entries(FINISH_LABELS) as [k, v] (k)}
 					<button
@@ -75,7 +77,7 @@
 		>
 		{#if open === 'cond'}
 			<div
-				class="absolute z-50 mt-1 flex max-h-60 flex-col overflow-auto rounded-md bg-surface p-1 shadow-lg ring-1 ring-border"
+				class="absolute bottom-full z-50 mb-1 flex max-h-60 flex-col overflow-auto rounded-md bg-surface p-1 shadow-lg ring-1 ring-border"
 			>
 				{#each Object.entries(CONDITIONS) as [k, v] (k)}<button
 						type="button"
@@ -92,7 +94,7 @@
 		>
 		{#if open === 'lang'}
 			<div
-				class="absolute z-50 mt-1 flex max-h-60 flex-col overflow-auto rounded-md bg-surface p-1 shadow-lg ring-1 ring-border"
+				class="absolute bottom-full z-50 mb-1 flex max-h-60 flex-col overflow-auto rounded-md bg-surface p-1 shadow-lg ring-1 ring-border"
 			>
 				{#each Object.entries(LANGUAGES) as [k, v] (k)}<button
 						type="button"
@@ -109,7 +111,7 @@
 		>
 		{#if open === 'price'}
 			<div
-				class="absolute z-50 mt-1 flex flex-col gap-1 rounded-md bg-surface p-2 shadow-lg ring-1 ring-border"
+				class="absolute bottom-full z-50 mb-1 flex flex-col gap-1 rounded-md bg-surface p-2 shadow-lg ring-1 ring-border"
 			>
 				<button
 					type="button"

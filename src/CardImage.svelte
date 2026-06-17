@@ -1,69 +1,73 @@
 <script>
 	import Modal from './Modal.svelte';
-	/** @type {{ card: import('./types').Card }} */
-	let { card } = $props();
+	import { getFaces, isDoubleFaced, inlineImage, zoomImage } from './lib/images.js';
+	/**
+	 * @type {{
+	 *   card: import('./types').Card;
+	 *   onselect?: (event: MouseEvent) => void;
+	 *   onhover?: () => void;
+	 * }}
+	 */
+	let { card, onselect, onhover } = $props();
 
-	const faces = $derived(Array.isArray(card.image_uris) ? card.image_uris : [card.image_uris]);
-	const isDfc = $derived(faces.length > 1 && !!faces[1]);
+	const faces = $derived(getFaces(card));
+	const dfc = $derived(isDoubleFaced(card));
 	let flipped = $state(false);
 	let lightbox = $state(false);
-	let hovering = $state(false);
 
-	const canHover =
-		typeof window !== 'undefined' &&
-		window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-	const face = () => faces[flipped && isDfc ? 1 : 0];
-	const inlineSrc = () => face()?.border_crop ?? face()?.normal ?? '';
-	const zoomSrc = () => face()?.large ?? face()?.png ?? face()?.normal ?? inlineSrc();
-
-	const onClick = () => {
-		if (!canHover) lightbox = true;
-	};
+	const face = $derived(faces[flipped && dfc ? 1 : 0]);
+	const inlineSrc = $derived(inlineImage(face));
+	const zoomSrc = $derived(zoomImage(face));
 </script>
 
 <div class="relative">
+	<!-- Clicking the card image selects it (Shift/Ctrl-⌘ modifiers apply). -->
 	<button
 		type="button"
 		class="block w-full"
-		onclick={onClick}
-		onmouseenter={() => (hovering = canHover)}
-		onmouseleave={() => (hovering = false)}
-		aria-label={`${card.name} image${canHover ? '' : ' — tap to enlarge'}`}
+		onclick={(e) => onselect?.(e)}
+		onmouseenter={() => onhover?.()}
+		onfocus={() => onhover?.()}
+		aria-label={`Select ${card.name}`}
 	>
-		<img
-			src={inlineSrc()}
-			alt={card.name}
-			loading="lazy"
-			class="block aspect-5/7 w-full rounded-md object-cover"
-		/>
+		{#if inlineSrc}
+			<img
+				src={inlineSrc}
+				alt={card.name}
+				loading="lazy"
+				class="block aspect-5/7 w-full rounded-md object-cover"
+			/>
+		{:else}
+			<span
+				class="flex aspect-5/7 w-full items-center justify-center rounded-md bg-surface-2 px-2 text-center text-xs text-muted"
+				>{card.name}</span
+			>
+		{/if}
 	</button>
 
-	{#if isDfc}
+	<div class="pointer-events-none absolute right-1 bottom-1 flex gap-1">
+		{#if dfc}
+			<button
+				type="button"
+				class="pointer-events-auto rounded-full bg-black/55 px-2 py-0.5 text-xs text-white hover:bg-black/75"
+				onclick={() => (flipped = !flipped)}
+				aria-label="Flip card"
+				title="Flip card">⤺</button
+			>
+		{/if}
 		<button
 			type="button"
-			onclick={() => (flipped = !flipped)}
-			aria-label="Flip card"
-			title="Flip card"
-			class="absolute right-1 bottom-1 rounded-full bg-black/55 px-2 py-0.5 text-xs text-white hover:bg-black/75"
+			class="pointer-events-auto rounded-full bg-black/55 px-2 py-0.5 text-xs text-white hover:bg-black/75"
+			onclick={() => (lightbox = true)}
+			aria-label={`Zoom ${card.name}`}
+			title="Zoom">⤢</button
 		>
-			⤺
-		</button>
-	{/if}
-
-	{#if hovering && canHover}
-		<img
-			src={zoomSrc()}
-			alt=""
-			aria-hidden="true"
-			class="pointer-events-none fixed top-4 right-4 z-50 hidden max-h-[80vh] rounded-lg shadow-2xl lg:block"
-		/>
-	{/if}
+	</div>
 </div>
 
 <Modal bind:show={lightbox} onclose={() => (lightbox = false)} panelClass="bg-transparent p-2">
-	<img src={zoomSrc()} alt={card.name} class="max-h-[85vh] max-w-full rounded-md object-contain" />
-	{#if isDfc}
+	<img src={zoomSrc} alt={card.name} class="max-h-[85vh] max-w-full rounded-md object-contain" />
+	{#if dfc}
 		<button
 			type="button"
 			onclick={() => (flipped = !flipped)}
