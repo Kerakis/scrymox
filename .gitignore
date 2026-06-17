@@ -14,6 +14,7 @@ dist-ssr
 
 # Brainstorming visual companion
 .superpowers/
+docs/
 
 # Editor directories and files
 .vscode/*
