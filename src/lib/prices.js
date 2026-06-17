@@ -1,0 +1,38 @@
+/**
+ * Price selection. Maps a price source + finish to the correct Scryfall price
+ * key and resolves the value (or null when unavailable).
+ *
+ * @typedef {import('../types').CardPrices} CardPrices
+ * @typedef {'tcgplayer' | 'cardmarket' | 'cardhoarder'} PriceSource
+ */
+
+/** Selectable price sources, in display order. */
+export const PRICE_SOURCES = {
+	tcgplayer: { label: 'TCGplayer', currency: 'USD' },
+	cardmarket: { label: 'Cardmarket', currency: 'EUR' },
+	cardhoarder: { label: 'Cardhoarder', currency: 'TIX' }
+};
+
+/**
+ * @param {PriceSource} source
+ * @param {string | null} finish '' | 'foil' | 'etched' | null
+ * @returns {keyof CardPrices}
+ */
+export const priceKey = (source, finish) => {
+	if (source === 'cardhoarder') return 'tix';
+	const base = source === 'cardmarket' ? 'eur' : 'usd';
+	if (finish === 'foil') return /** @type {keyof CardPrices} */ (`${base}_foil`);
+	if (finish === 'etched') return /** @type {keyof CardPrices} */ (`${base}_etched`);
+	return /** @type {keyof CardPrices} */ (base);
+};
+
+/**
+ * @param {CardPrices | undefined} prices
+ * @param {PriceSource} source
+ * @param {string | null} finish
+ * @returns {string | null}
+ */
+export const getPrice = (prices, source, finish) => {
+	if (!prices) return null;
+	return prices[priceKey(source, finish)] ?? null;
+};

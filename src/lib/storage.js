@@ -57,3 +57,12 @@ export const readString = (key, fallback, store = defaultStore) => {
 export const writeString = (key, value, store = defaultStore) => {
 	store?.setItem(key, value);
 };
+
+/**
+ * Removes a stored value.
+ * @param {string} key
+ * @param {(KeyValueStore & { removeItem?: (key: string) => void }) | undefined} [store]
+ */
+export const removeKey = (key, store = defaultStore) => {
+	/** @type {{ removeItem?: (key: string) => void }} */ (store)?.removeItem?.(key);
+};

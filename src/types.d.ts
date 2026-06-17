@@ -25,6 +25,7 @@ export interface CardPrices {
 	usd_etched?: string | null;
 	eur?: string | null;
 	eur_foil?: string | null;
+	eur_etched?: string | null;
 	tix?: string | null;
 }
 
@@ -37,11 +38,15 @@ interface ScryfallCardFace {
 /** The subset of the Scryfall card object that ScryMox consumes. */
 export interface ScryfallCard {
 	id: string;
+	oracle_id?: string;
 	name: string;
 	set: string;
+	set_name?: string;
 	collector_number: string;
+	lang?: string;
 	layout: string;
 	finishes: string[];
+	games?: string[];
 	image_uris?: CardImageUris;
 	card_faces?: ScryfallCardFace[];
 	prices: CardPrices;
@@ -63,9 +68,15 @@ export interface ScryfallSearchResponse {
 /** ScryMox's internal, user-editable representation of a card. */
 export interface Card {
 	id: string;
+	oracle_id?: string;
 	name: string;
 	set: string;
+	set_name?: string;
 	collector_number: string;
+	/** Scryfall card layout (e.g. 'normal', 'transform', 'split'). */
+	layout?: string;
+	/** Game availability, e.g. ['paper', 'mtgo', 'arena']. */
+	games?: string[];
 	finishes: string[];
 	/** Single image URIs, or `[front, back]` for multi-faced cards. */
 	image_uris?: CardImageUris | (CardImageUris | undefined)[];

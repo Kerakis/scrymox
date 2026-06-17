@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDefaultFinish, getDisplayFinish, getFinishPrice } from './finishes.js';
+import { getDefaultFinish, getDisplayFinish, getFinishPrice, isFinishAllowed } from './finishes.js';
 
 describe('getDefaultFinish', () => {
 	it('prefers nonfoil and returns empty string', () => {
@@ -54,5 +54,16 @@ describe('getFinishPrice', () => {
 	it('returns null when the requested price is missing', () => {
 		expect(getFinishPrice({ usd: null }, 'foil')).toBe(null);
 		expect(getFinishPrice(undefined, 'foil')).toBe(null);
+	});
+});
+
+describe('isFinishAllowed', () => {
+	it('checks the card finishes array', () => {
+		expect(isFinishAllowed(['nonfoil', 'foil'], '')).toBe(true);
+		expect(isFinishAllowed(['nonfoil', 'foil'], 'foil')).toBe(true);
+		expect(isFinishAllowed(['nonfoil', 'foil'], 'etched')).toBe(false);
+		expect(isFinishAllowed(['foil'], '')).toBe(false);
+		expect(isFinishAllowed(['etched'], 'etched')).toBe(true);
+		expect(isFinishAllowed([], 'foil')).toBe(false);
 	});
 });

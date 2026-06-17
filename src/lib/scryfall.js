@@ -1,21 +1,8 @@
 import { getDefaultFinish, getDisplayFinish, getFinishPrice } from './finishes.js';
+import { requestQueue } from './requestQueue.js';
 
 const SEARCH_ENDPOINT = 'https://api.scryfall.com/cards/search';
-
-/** Minimum gap between requests, per Scryfall's rate-limit guidance. */
-const MIN_REQUEST_INTERVAL_MS = 100;
-
-/**
- * The slice of `fetch` that {@link searchAllPages} needs — loose enough that a
- * stub can be injected in tests, while the real `fetch` still satisfies it.
- * @typedef {(
- *   url: string,
- *   init?: { headers?: Record<string, string> }
- * ) => Promise<{ json: () => Promise<unknown> }>} FetchLike
- */
-
-const defaultSleep = (/** @type {number} */ ms) =>
-	new Promise((resolve) => setTimeout(resolve, ms));
+const ACCEPT = 'application/json;q=0.9,*/*;q=0.8';
 
 /**
  * Builds a Scryfall `/cards/search` URL from the user's query plus any saved
@@ -33,12 +20,12 @@ export const buildSearchUrl = (query, defaultOptions) => {
 };
 
 /**
- * Converts a raw Scryfall card into ScryMox's editable {@link Card} model,
- * applying default finish/price and per-card defaults.
+ * Converts a raw Scryfall card into ScryMox's editable {@link Card} model.
  * @param {import('../types').ScryfallCard} scryfallCard
+ * @param {import('./prices').PriceSource} [source]
  * @returns {import('../types').Card}
  */
-export const normalizeCard = (scryfallCard) => {
+export const normalizeCard = (scryfallCard, source = 'tcgplayer') => {
 	const selectedFinish = getDefaultFinish(scryfallCard.finishes);
 	const faces = scryfallCard.card_faces;
 
@@ -59,8 +46,12 @@ export const normalizeCard = (scryfallCard) => {
 
 	return {
 		id: scryfallCard.id,
+		oracle_id: scryfallCard.oracle_id,
 		collector_number: scryfallCard.collector_number,
 		set: scryfallCard.set,
+		set_name: scryfallCard.set_name,
+		layout: scryfallCard.layout,
+		games: scryfallCard.games ?? [],
 		image_uris,
 		name,
 		finishes: scryfallCard.finishes,
@@ -68,10 +59,12 @@ export const normalizeCard = (scryfallCard) => {
 		displayFinish: getDisplayFinish(selectedFinish),
 		count: 1,
 		condition: 'NM',
-		language: 'EN',
+		language: (scryfallCard.lang ?? 'en').toUpperCase(),
 		alter: false,
 		proxy: false,
 		prices: scryfallCard.prices,
+		// Transitional: kept so existing components keep rendering until Plan 02
+		// switches them to live getPrice(prices, source, finish).
 		displayedPrice: getFinishPrice(scryfallCard.prices, selectedFinish),
 		priceManuallySet: false
 	};
@@ -79,28 +72,26 @@ export const normalizeCard = (scryfallCard) => {
 
 /**
  * Fetches every page of a Scryfall search, normalizing and reporting each page
- * as it arrives (so callers can render incrementally). Requests are throttled
- * to stay within Scryfall's rate limit.
+ * as it arrives. All requests go through the shared queue (throttle + 429
+ * backoff).
  *
- * @param {string} url - The first page URL (from {@link buildSearchUrl}).
+ * @param {string} url
  * @param {{
  *   onPage: (cards: import('../types').Card[], totalCards: number) => void;
- *   fetchImpl?: FetchLike;
- *   sleep?: (ms: number) => Promise<void>;
+ *   source?: import('./prices').PriceSource;
+ *   enqueue?: (url: string, init?: RequestInit) => Promise<{ json: () => Promise<any> }>;
  * }} options
- * @returns {Promise<{ error?: string }>} An error message if the search failed.
+ * @returns {Promise<{ error?: string }>}
  */
-export const searchAllPages = async (url, { onPage, fetchImpl = fetch, sleep = defaultSleep }) => {
+export const searchAllPages = async (
+	url,
+	{ onPage, source = 'tcgplayer', enqueue = requestQueue.enqueue }
+) => {
 	/** @type {string | null} */
 	let next = url;
-	let lastRequest = 0;
 
 	while (next) {
-		const wait = MIN_REQUEST_INTERVAL_MS - (Date.now() - lastRequest);
-		if (wait > 0) await sleep(wait);
-		lastRequest = Date.now();
-
-		const response = await fetchImpl(next, { headers: { 'User-Agent': 'Scrymox' } });
+		const response = await enqueue(next, { headers: { Accept: ACCEPT } });
 		const data = /** @type {import('../types').ScryfallSearchResponse} */ (await response.json());
 
 		if (data.object === 'error' || data.warnings) {
@@ -109,7 +100,10 @@ export const searchAllPages = async (url, { onPage, fetchImpl = fetch, sleep = d
 			return { error };
 		}
 
-		onPage(data.data.map(normalizeCard), data.total_cards);
+		onPage(
+			data.data.map((card) => normalizeCard(card, source)),
+			data.total_cards
+		);
 		next = data.has_more ? data.next_page : null;
 	}
 
