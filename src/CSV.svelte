@@ -1,8 +1,18 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
 	import Card from './Card.svelte';
+	import Modal from './Modal.svelte';
+	import { getDisplayFinish, getFinishPrice } from './lib/finishes.js';
+	import { buildCsv } from './lib/export.js';
 
-	let { cards = [], onupdate } = $props();
+	/**
+	 * @type {{
+	 *   cards?: import('./types').Card[];
+	 *   onupdate?: (cards: import('./types').Card[]) => void;
+	 *   onremove?: (id: string) => void;
+	 * }}
+	 */
+	let { cards = [], onupdate, onremove } = $props();
+	/** @type {HTMLInputElement | undefined} */
 	let countInput = $state();
 	let showCountModal = $state(false);
 	let showConditionModal = $state(false);
@@ -11,59 +21,6 @@
 	let showAlterModal = $state(false);
 	let showProxyModal = $state(false);
 	let showPriceModal = $state(false);
-	let availableFinishes = $state([]);
-
-	$effect(() => {
-		availableFinishes = [...new Set(cards.flatMap((card) => card.finishes))];
-	});
-
-	onMount(() => {
-		window.addEventListener('keydown', handleKeyDown);
-		window.addEventListener('click', handleClickOutside);
-	});
-
-	onDestroy(() => {
-		window.removeEventListener('keydown', handleKeyDown);
-		window.removeEventListener('click', handleClickOutside);
-	});
-
-	const handleKeyDown = (event) => {
-		if (event.key === 'Escape') {
-			showCountModal = false;
-			showConditionModal = false;
-			showLanguageModal = false;
-			showFinishModal = false;
-			showAlterModal = false;
-			showProxyModal = false;
-			showPriceModal = false;
-		}
-		if (event.key === 'Enter' && showCountModal) {
-			changeAllCounts();
-		}
-	};
-
-	const handleClickOutside = (event) => {
-		if (event.target.closest('.modal') === null) {
-			showCountModal = false;
-			showConditionModal = false;
-			showLanguageModal = false;
-			showFinishModal = false;
-			showAlterModal = false;
-			showProxyModal = false;
-			showPriceModal = false;
-		}
-	};
-
-	const toggleModal = (modalName) => (event) => {
-		event.stopPropagation();
-		if (modalName === 'count') showCountModal = !showCountModal;
-		if (modalName === 'condition') showConditionModal = !showConditionModal;
-		if (modalName === 'language') showLanguageModal = !showLanguageModal;
-		if (modalName === 'finish') showFinishModal = !showFinishModal;
-		if (modalName === 'alter') showAlterModal = !showAlterModal;
-		if (modalName === 'proxy') showProxyModal = !showProxyModal;
-		if (modalName === 'price') showPriceModal = !showPriceModal;
-	};
 
 	const languages = {
 		EN: 'English',
@@ -94,223 +51,70 @@
 		DM: 'Damaged'
 	};
 
-	const finishes = ['nonfoil', 'foil', 'etched'];
+	/**
+	 * Returns a finish-updated copy of a card, refreshing the marker and (unless
+	 * the price was set manually) the auto price.
+	 * @param {import('./types').Card} card
+	 * @param {string} finish
+	 * @returns {import('./types').Card}
+	 */
+	const withFinish = (card, finish) => {
+		const next = { ...card, selectedFinish: finish, displayFinish: getDisplayFinish(finish) };
+		if (!next.priceManuallySet) next.displayedPrice = getFinishPrice(next.prices, finish);
+		return next;
+	};
 
-	const updateCard = (index, field, eventOrValue) => {
-		let updatedCards = [...cards];
-		if (field === 'count') {
-			const newCount = parseInt(eventOrValue);
-			if (newCount >= 1 && newCount <= 99) {
-				updatedCards[index][field] = newCount;
-			}
-		} else if (eventOrValue instanceof Event) {
-			const target = eventOrValue.currentTarget;
-			if (target && 'value' in target) {
-				updatedCards[index][field] = target.value;
-			}
-		} else {
-			updatedCards[index][field] = eventOrValue;
-		}
-		if (onupdate) {
-			onupdate(updatedCards);
-		}
+	/** Replaces the card at `index` with `{ ...card, ...patch }`. */
+	const updateAt = (
+		/** @type {number} */ index,
+		/** @type {Partial<import('./types').Card>} */ patch
+	) => onupdate?.(cards.map((card, i) => (i === index ? { ...card, ...patch } : card)));
+
+	/** Applies `patch` to every card. */
+	const updateAll = (/** @type {Partial<import('./types').Card>} */ patch) =>
+		onupdate?.(cards.map((card) => ({ ...card, ...patch })));
+
+	const updateCount = (/** @type {number} */ index, /** @type {string} */ value) => {
+		const count = parseInt(value);
+		if (count >= 1 && count <= 99) updateAt(index, { count });
 	};
 
 	const changeAllCounts = () => {
-		let updatedCards = [...cards];
-		const newCount = parseInt(countInput.value);
-		if (newCount >= 1 && newCount <= 99) {
-			updatedCards.forEach((card) => {
-				card.count = newCount;
-			});
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
+		if (countInput) {
+			const count = parseInt(countInput.value);
+			if (count >= 1 && count <= 99) updateAll({ count });
 		}
 		showCountModal = false;
 	};
 
-	const changeAllLanguages = (event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			updatedCards.forEach((card) => {
-				card.language = target.value;
-			});
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
+	const changeFinish = (/** @type {number} */ index, /** @type {string} */ finish) =>
+		onupdate?.(cards.map((card, i) => (i === index ? withFinish(card, finish) : card)));
+
+	const changeAllFinishes = (/** @type {string} */ finish) =>
+		onupdate?.(cards.map((card) => withFinish(card, finish)));
+
+	const updatePrice = (/** @type {number} */ index, /** @type {string} */ value) => {
+		if (value === '') {
+			updateAt(index, { price: undefined, priceManuallySet: false });
+		} else {
+			updateAt(index, { price: parseFloat(value), priceManuallySet: true });
 		}
 	};
 
-	const changeAllConditions = (event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			updatedCards.forEach((card) => {
-				card.condition = target.value;
-			});
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
+	const toggleStatus = (/** @type {number} */ index, /** @type {'alter' | 'proxy'} */ field) =>
+		updateAt(index, { [field]: !cards[index][field] });
 
-	const changeAllFinishes = (event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			const selectedFinish = target.value;
-			updatedCards.forEach((card) => {
-				card.selectedFinish = selectedFinish;
-				if (selectedFinish === 'foil') {
-					card.displayFinish = '*F*';
-				} else if (selectedFinish === 'etched') {
-					card.displayFinish = '*E*';
-				} else {
-					card.displayFinish = '';
-				}
-			});
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
-
-	const changeFinish = (index, event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			const selectedFinish = target.value;
-			updatedCards[index].selectedFinish = selectedFinish;
-			if (selectedFinish === 'foil') {
-				updatedCards[index].displayFinish = '*F*';
-			} else if (selectedFinish === 'etched') {
-				updatedCards[index].displayFinish = '*E*';
-			} else {
-				updatedCards[index].displayFinish = '';
-			}
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
-
-	const changeAllProxies = (event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			const isProxy = target.value === 'true';
-			updatedCards.forEach((card) => {
-				card.proxy = isProxy;
-			});
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
-
-	const changeAllAlters = (event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			const isAlter = target.value === 'true';
-			updatedCards.forEach((card) => {
-				card.alter = isAlter;
-			});
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
-
-	const updatePrice = (index, event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			updatedCards[index].price = parseFloat(target.value);
-			updatedCards[index].priceManuallySet = true;
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
-
-	const changeAllPrices = (event) => {
-		let updatedCards = [...cards];
-		const target = event.currentTarget;
-		if (target && 'value' in target) {
-			const priceType = target.value;
-			if (priceType === 'auto') {
-				updatedCards.forEach((card) => {
-					card.priceManuallySet = false;
-				});
-			}
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
-
-	const toggleStatus = (index, field) => {
-		let updatedCards = [...cards];
-		updatedCards[index][field] = !updatedCards[index][field];
-		if (onupdate) {
-			onupdate(updatedCards);
-		}
-	};
-
-	// Handle card updates from the Card component in CSV mode
-	const handleCardUpdate = (updatedCard) => {
-		let updatedCards = [...cards];
-		const cardIndex = updatedCards.findIndex((c) => c.id === updatedCard.id);
-		if (cardIndex !== -1) {
-			updatedCards[cardIndex] = updatedCard;
-			if (onupdate) {
-				onupdate(updatedCards);
-			}
-		}
-	};
+	const handleCardUpdate = (/** @type {import('./types').Card} */ updatedCard) =>
+		onupdate?.(cards.map((card) => (card.id === updatedCard.id ? updatedCard : card)));
 
 	const downloadCSV = () => {
-		const csvContent = [
-			[
-				'Count',
-				'Name',
-				'Edition',
-				'Collector Number',
-				'Condition',
-				'Language',
-				'Foil',
-				'Alter',
-				'Proxy',
-				'Price'
-			].join(','),
-			...cards.map((card) =>
-				[
-					card.count,
-					`"${card.name}"`,
-					card.set.toUpperCase(),
-					card.collector_number,
-					card.condition,
-					card.language,
-					card.selectedFinish === 'foil'
-						? 'foil'
-						: card.selectedFinish === 'etched'
-							? 'etched'
-							: '',
-					card.alter ? 'Yes' : '',
-					card.proxy ? 'Yes' : '',
-					card.price || ''
-				].join(',')
-			)
-		].join('\n');
-
-		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const blob = new Blob([buildCsv(cards)], { type: 'text/csv;charset=utf-8;' });
+		const url = URL.createObjectURL(blob);
 		const link = document.createElement('a');
-		link.href = URL.createObjectURL(blob);
+		link.href = url;
 		link.download = 'cards.csv';
 		link.click();
+		URL.revokeObjectURL(url);
 	};
 </script>
 
@@ -319,253 +123,177 @@
 		<thead>
 			<tr class="border-b border-gray-500">
 				<th class="px-2 py-1 text-left">
-					<button type="button" onclick={toggleModal('count')} class="cursor-pointer font-semibold"
-						>Count</button
+					<button
+						type="button"
+						onclick={() => (showCountModal = !showCountModal)}
+						class="cursor-pointer font-semibold">Count</button
 					>
-					{#if showCountModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showCountModal = false;
-							}}
+					<Modal bind:show={showCountModal} onclose={() => (showCountModal = false)}>
+						<input
+							bind:this={countInput}
+							type="number"
+							min="1"
+							max="99"
+							placeholder="Count"
 							onkeydown={(e) => {
-								if (e.key === 'Escape') showCountModal = false;
+								if (e.key === 'Enter') changeAllCounts();
 							}}
-							role="button"
-							tabindex="0"
-						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<input
-									bind:this={countInput}
-									type="number"
-									min="1"
-									max="99"
-									placeholder="Count"
-									class="rounded-sm px-2 py-1 text-gray-200"
-								/>
-								<button onclick={changeAllCounts} class="ml-2 rounded-sm bg-indigo-600 px-2 py-1">
-									Apply to All
-								</button>
-							</div>
-						</div>
-					{/if}
+							class="rounded-sm px-2 py-1 text-gray-200"
+						/>
+						<button onclick={changeAllCounts} class="ml-2 rounded-sm bg-indigo-600 px-2 py-1">
+							Apply to All
+						</button>
+					</Modal>
 				</th>
 				<th class="px-2 py-1 text-left">Name</th>
 				<th class="px-2 py-1 text-left">Edition</th>
 				<th class="px-2 py-1 text-left">
 					<button
 						type="button"
-						onclick={toggleModal('condition')}
+						onclick={() => (showConditionModal = !showConditionModal)}
 						class="cursor-pointer font-semibold">Condition</button
 					>
-					{#if showConditionModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showConditionModal = false;
-							}}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') showConditionModal = false;
-							}}
-							role="button"
-							tabindex="0"
+					<Modal bind:show={showConditionModal} onclose={() => (showConditionModal = false)}>
+						<select
+							onchange={(e) => updateAll({ condition: e.currentTarget.value })}
+							class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
 						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<select
-									onchange={changeAllConditions}
-									class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
-								>
-									<option value="">-- Select --</option>
-									{#each Object.entries(conditions) as [key, value]}
-										<option value={key}>{value}</option>
-									{/each}
-								</select>
-								<button
-									onclick={() => (showConditionModal = false)}
-									class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
-								>
-									Done
-								</button>
-							</div>
-						</div>
-					{/if}
+							<option value="">-- Select --</option>
+							{#each Object.entries(conditions) as [key, value] (key)}
+								<option value={key}>{value}</option>
+							{/each}
+						</select>
+						<button
+							onclick={() => (showConditionModal = false)}
+							class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
+						>
+							Done
+						</button>
+					</Modal>
 				</th>
 				<th class="px-2 py-1 text-left">
 					<button
 						type="button"
-						onclick={toggleModal('language')}
+						onclick={() => (showLanguageModal = !showLanguageModal)}
 						class="cursor-pointer font-semibold">Language</button
 					>
-					{#if showLanguageModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showLanguageModal = false;
-							}}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') showLanguageModal = false;
-							}}
-							role="button"
-							tabindex="0"
+					<Modal bind:show={showLanguageModal} onclose={() => (showLanguageModal = false)}>
+						<select
+							onchange={(e) => updateAll({ language: e.currentTarget.value })}
+							class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
 						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<select
-									onchange={changeAllLanguages}
-									class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
-								>
-									<option value="">-- Select --</option>
-									{#each Object.entries(languages) as [key, value]}
-										<option value={key}>{value}</option>
-									{/each}
-								</select>
-								<button
-									onclick={() => (showLanguageModal = false)}
-									class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
-								>
-									Done
-								</button>
-							</div>
-						</div>
-					{/if}
+							<option value="">-- Select --</option>
+							{#each Object.entries(languages) as [key, value] (key)}
+								<option value={key}>{value}</option>
+							{/each}
+						</select>
+						<button
+							onclick={() => (showLanguageModal = false)}
+							class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
+						>
+							Done
+						</button>
+					</Modal>
 				</th>
 				<th class="px-2 py-1 text-left">
-					<button type="button" onclick={toggleModal('finish')} class="cursor-pointer font-semibold"
-						>Finish</button
+					<button
+						type="button"
+						onclick={() => (showFinishModal = !showFinishModal)}
+						class="cursor-pointer font-semibold">Finish</button
 					>
-					{#if showFinishModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showFinishModal = false;
-							}}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') showFinishModal = false;
-							}}
-							role="button"
-							tabindex="0"
+					<Modal bind:show={showFinishModal} onclose={() => (showFinishModal = false)}>
+						<select
+							onchange={(e) => changeAllFinishes(e.currentTarget.value)}
+							class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
 						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<select
-									onchange={changeAllFinishes}
-									class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
-								>
-									<option value="">Non-foil</option>
-									<option value="foil">Foil</option>
-									<option value="etched">Etched</option>
-								</select>
-								<button
-									onclick={() => (showFinishModal = false)}
-									class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
-								>
-									Done
-								</button>
-							</div>
-						</div>
-					{/if}
+							<option value="">Non-foil</option>
+							<option value="foil">Foil</option>
+							<option value="etched">Etched</option>
+						</select>
+						<button
+							onclick={() => (showFinishModal = false)}
+							class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
+						>
+							Done
+						</button>
+					</Modal>
 				</th>
 				<th class="px-2 py-1 text-left">
-					<button type="button" onclick={toggleModal('alter')} class="cursor-pointer font-semibold"
-						>Alter</button
+					<button
+						type="button"
+						onclick={() => (showAlterModal = !showAlterModal)}
+						class="cursor-pointer font-semibold">Alter</button
 					>
-					{#if showAlterModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showAlterModal = false;
-							}}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') showAlterModal = false;
-							}}
-							role="button"
-							tabindex="0"
+					<Modal bind:show={showAlterModal} onclose={() => (showAlterModal = false)}>
+						<select
+							onchange={(e) => updateAll({ alter: e.currentTarget.value === 'true' })}
+							class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
 						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<select
-									onchange={changeAllAlters}
-									class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
-								>
-									<option value="">-- Select --</option>
-									<option value="false">No</option>
-									<option value="true">Yes</option>
-								</select>
-								<button
-									onclick={() => (showAlterModal = false)}
-									class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
-								>
-									Done
-								</button>
-							</div>
-						</div>
-					{/if}
+							<option value="false">No</option>
+							<option value="true">Yes</option>
+						</select>
+						<button
+							onclick={() => (showAlterModal = false)}
+							class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
+						>
+							Done
+						</button>
+					</Modal>
 				</th>
 				<th class="px-2 py-1 text-left">
-					<button type="button" onclick={toggleModal('proxy')} class="cursor-pointer font-semibold"
-						>Proxy</button
+					<button
+						type="button"
+						onclick={() => (showProxyModal = !showProxyModal)}
+						class="cursor-pointer font-semibold">Proxy</button
 					>
-					{#if showProxyModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showProxyModal = false;
-							}}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') showProxyModal = false;
-							}}
-							role="button"
-							tabindex="0"
+					<Modal bind:show={showProxyModal} onclose={() => (showProxyModal = false)}>
+						<select
+							onchange={(e) => updateAll({ proxy: e.currentTarget.value === 'true' })}
+							class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
 						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<select
-									onchange={changeAllProxies}
-									class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
-								>
-									<option value="">-- Select --</option>
-									<option value="false">No</option>
-									<option value="true">Yes</option>
-								</select>
-								<button
-									onclick={() => (showProxyModal = false)}
-									class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
-								>
-									Done
-								</button>
-							</div>
-						</div>
-					{/if}
+							<option value="false">No</option>
+							<option value="true">Yes</option>
+						</select>
+						<button
+							onclick={() => (showProxyModal = false)}
+							class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
+						>
+							Done
+						</button>
+					</Modal>
 				</th>
 				<th class="px-2 py-1 text-left">
-					<button type="button" onclick={toggleModal('price')} class="cursor-pointer font-semibold"
-						>Price</button
+					<button
+						type="button"
+						onclick={() => (showPriceModal = !showPriceModal)}
+						class="cursor-pointer font-semibold">Price</button
 					>
-					{#if showPriceModal}
-						<div
-							class="bg-opacity-50 modal fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={(e) => {
-								if (e.target === e.currentTarget) showPriceModal = false;
+					<Modal bind:show={showPriceModal} onclose={() => (showPriceModal = false)}>
+						<p class="mb-2 text-sm">
+							Prices default to the Scryfall price for each card's finish. Type a value in any row
+							to override it; choose Auto to clear all overrides.
+						</p>
+						<select
+							onchange={(e) => {
+								if (e.currentTarget.value === 'auto')
+									updateAll({ price: undefined, priceManuallySet: false });
 							}}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') showPriceModal = false;
-							}}
-							role="button"
-							tabindex="0"
+							class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
 						>
-							<div class="rounded-lg bg-indigo-800 p-4 text-gray-200" role="document">
-								<select
-									onchange={changeAllPrices}
-									class="rounded-sm bg-indigo-700 px-2 py-1 text-gray-200"
-								>
-									<option value="auto">Auto</option>
-								</select>
-								<button
-									onclick={() => (showPriceModal = false)}
-									class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
-								>
-									Done
-								</button>
-							</div>
-						</div>
-					{/if}
+							<option value="">-- Select --</option>
+							<option value="auto">Auto (Scryfall price)</option>
+						</select>
+						<button
+							onclick={() => (showPriceModal = false)}
+							class="ml-2 rounded-sm bg-indigo-600 px-2 py-1"
+						>
+							Done
+						</button>
+					</Modal>
 				</th>
+				{#if onremove}
+					<th class="px-2 py-1 text-left"><span class="sr-only">Remove</span></th>
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -577,7 +305,7 @@
 							min="1"
 							max="99"
 							value={card.count}
-							onchange={(e) => updateCard(index, 'count', e.currentTarget.value)}
+							onchange={(e) => updateCount(index, e.currentTarget.value)}
 							class="w-16 rounded-sm px-1 py-1 text-gray-200"
 						/>
 					</td>
@@ -588,10 +316,10 @@
 					<td class="px-2 py-1">
 						<select
 							value={card.condition}
-							onchange={(e) => updateCard(index, 'condition', e)}
+							onchange={(e) => updateAt(index, { condition: e.currentTarget.value })}
 							class="rounded-sm bg-indigo-700 px-1 py-1 text-gray-200"
 						>
-							{#each Object.entries(conditions) as [key, value]}
+							{#each Object.entries(conditions) as [key, value] (key)}
 								<option value={key}>{value}</option>
 							{/each}
 						</select>
@@ -599,10 +327,10 @@
 					<td class="px-2 py-1">
 						<select
 							value={card.language}
-							onchange={(e) => updateCard(index, 'language', e)}
+							onchange={(e) => updateAt(index, { language: e.currentTarget.value })}
 							class="rounded-sm bg-indigo-700 px-1 py-1 text-gray-200"
 						>
-							{#each Object.entries(languages) as [key, value]}
+							{#each Object.entries(languages) as [key, value] (key)}
 								<option value={key}>{value}</option>
 							{/each}
 						</select>
@@ -610,7 +338,7 @@
 					<td class="px-2 py-1">
 						<select
 							value={card.selectedFinish}
-							onchange={(e) => changeFinish(index, e)}
+							onchange={(e) => changeFinish(index, e.currentTarget.value)}
 							class="rounded-sm bg-indigo-700 px-1 py-1 text-gray-200"
 						>
 							<option value="">Non-foil</option>
@@ -643,12 +371,24 @@
 							type="number"
 							step="0.01"
 							min="0"
-							value={card.price || ''}
-							onchange={(e) => updatePrice(index, e)}
+							value={card.priceManuallySet ? (card.price ?? '') : ''}
+							placeholder={card.displayedPrice ?? 'Auto'}
+							onchange={(e) => updatePrice(index, e.currentTarget.value)}
 							class="w-20 rounded-sm px-1 py-1 text-gray-200"
-							placeholder="Auto"
 						/>
 					</td>
+					{#if onremove}
+						<td class="px-2 py-1">
+							<button
+								type="button"
+								onclick={() => onremove?.(card.id)}
+								aria-label={`Remove ${card.name}`}
+								class="rounded-sm px-1 text-gray-400 hover:text-red-400 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+							>
+								✕
+							</button>
+						</td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>

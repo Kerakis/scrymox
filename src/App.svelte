@@ -2,201 +2,124 @@
 	import { onMount, onDestroy } from 'svelte';
 	import BulkEdit from './BulkEdit.svelte';
 	import CSV from './CSV.svelte';
+	import Modal from './Modal.svelte';
+	import { buildSearchUrl, searchAllPages } from './lib/scryfall.js';
+	import { readJSON, writeJSON, readString, writeString } from './lib/storage.js';
 
 	let query = $state('');
-	let selectedTab = $state(localStorage.getItem('selectedTab') || 'Bulk Edit');
-	let defaultQueryOptions = $state(localStorage.getItem('defaultQueryOptions') || '');
+	let selectedTab = $state(readString('selectedTab', 'Bulk Edit'));
+	let defaultQueryOptions = $state(readString('defaultQueryOptions', ''));
+	/** @type {import('./types').Card[]} */
 	let cards = $state([]);
 	let totalCards = $state(0);
 	let optionsModal = $state(false);
 	let tipsModal = $state(false);
 	let isLoading = $state(false);
 	let searchError = $state('');
+	/** @type {string[]} */
 	let searchHistory = $state([]);
 	let showDropdown = $state(false);
+	/** @type {HTMLDivElement | undefined} */
+	let searchContainer = $state();
 
-	// Current year
 	const year = new Date().getFullYear();
 
-	const saveSelectedTab = () => {
-		localStorage.setItem('selectedTab', selectedTab);
-	};
+	const saveSelectedTab = () => writeString('selectedTab', selectedTab);
+	const saveDefaultQueryOptions = () => writeString('defaultQueryOptions', defaultQueryOptions);
 
-	const handleEscape = (event) => {
-		if (event.key === 'Escape') {
-			optionsModal = false;
-			tipsModal = false;
+	const handleWindowClick = (/** @type {MouseEvent} */ event) => {
+		if (
+			showDropdown &&
+			searchContainer &&
+			!searchContainer.contains(/** @type {Node} */ (event.target))
+		) {
 			showDropdown = false;
 		}
 	};
 
-	const stopPropagation = (event) => {
-		event.stopPropagation();
+	const handleWindowKeydown = (/** @type {KeyboardEvent} */ event) => {
+		if (event.key === 'Escape') showDropdown = false;
 	};
 
 	onMount(() => {
-		window.addEventListener('keydown', handleEscape);
-		searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+		searchHistory = readJSON('searchHistory', []);
+		window.addEventListener('click', handleWindowClick);
+		window.addEventListener('keydown', handleWindowKeydown);
 	});
 
 	onDestroy(() => {
-		window.removeEventListener('keydown', handleEscape);
+		window.removeEventListener('click', handleWindowClick);
+		window.removeEventListener('keydown', handleWindowKeydown);
 	});
 
-	const getDefaultFinish = (finishes) => {
-		if (finishes.includes('nonfoil')) {
-			return '';
-		} else if (finishes.includes('foil')) {
-			return 'foil';
-		} else if (finishes.includes('etched')) {
-			return 'etched';
-		} else {
-			return null;
-		}
-	};
-
-	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-	let lastScryfallRequest = 0;
-
-	const fetchCards = async (url) => {
+	const runSearch = async (/** @type {string} */ url) => {
+		isLoading = true;
 		searchError = '';
+		cards = [];
+		totalCards = 0;
 
-		const now = Date.now();
-		if (lastScryfallRequest && now - lastScryfallRequest < 1000) {
-			await delay(1000 - (now - lastScryfallRequest));
+		/** @type {{ error?: string }} */
+		let result;
+		try {
+			result = await searchAllPages(url, {
+				// Append each page as it arrives so results render incrementally.
+				onPage: (newCards, total) => {
+					cards = [...cards, ...newCards];
+					totalCards = total;
+				}
+			});
+		} catch {
+			result = { error: 'Could not reach Scryfall. Please try again.' };
 		}
-		lastScryfallRequest = Date.now();
 
-		const response = await fetch(url, {
-			headers: {
-				'User-Agent': 'Scrymox'
-			}
-		});
-		const data = await response.json();
-
-		if (data.object === 'error' || data.warnings) {
-			searchError = data.details ? data.details : '';
-			if (data.warnings) {
-				searchError += (searchError ? ' ' : '') + data.warnings.join(' ');
-			}
+		if (result.error) {
+			searchError = result.error;
 			cards = [];
 			totalCards = 0;
-			isLoading = false;
-			return;
 		}
 
-		cards = [
-			...cards,
-			...data.data.map((card) => {
-				let selectedFinish = getDefaultFinish(card.finishes);
-				let displayFinish = '';
-				if (selectedFinish === 'foil') {
-					displayFinish = '*F*';
-				} else if (selectedFinish === 'etched') {
-					displayFinish = '*E*';
-				}
-
-				if (!card.card_faces) {
-					return {
-						id: card.id,
-						collector_number: card.collector_number,
-						set: card.set,
-						image_uris: card.image_uris,
-						name: card.name,
-						finishes: card.finishes,
-						selectedFinish: selectedFinish,
-						displayFinish: displayFinish,
-						count: 1,
-						condition: 'NM',
-						language: 'EN',
-						alter: false,
-						proxy: false,
-						prices: card.prices
-					};
-				} else if (card.layout !== 'split' && card.layout !== 'flip') {
-					const cardName =
-						card.layout === 'reversible_card' && card.card_faces?.length
-							? card.card_faces[0].name
-							: card.name;
-
-					return {
-						id: card.id,
-						collector_number: card.collector_number,
-						set: card.set,
-						image_uris: [card.card_faces[0].image_uris, card.card_faces[1].image_uris],
-						name: cardName,
-						finishes: card.finishes,
-						selectedFinish: selectedFinish,
-						displayFinish: displayFinish,
-						count: 1,
-						condition: 'NM',
-						language: 'EN',
-						alter: false,
-						proxy: false,
-						prices: card.prices
-					};
-				} else {
-					return {
-						id: card.id,
-						collector_number: card.collector_number,
-						set: card.set,
-						image_uris: card.image_uris ? card.image_uris : card.card_faces[0].image_uris,
-						name: card.name,
-						finishes: card.finishes,
-						selectedFinish: selectedFinish,
-						displayFinish: displayFinish,
-						count: 1,
-						condition: 'NM',
-						language: 'EN',
-						alter: false,
-						proxy: false,
-						prices: card.prices
-					};
-				}
-			})
-		];
-
-		totalCards = data.total_cards;
-		if (data.has_more) {
-			setTimeout(() => fetchCards(data.next_page), 100);
-		} else {
-			isLoading = false;
-		}
+		isLoading = false;
 	};
 
-	const search = (event) => {
-		if (event) event.preventDefault();
+	const search = (/** @type {SubmitEvent} */ event) => {
+		event?.preventDefault();
 
-		if (!query.trim()) {
+		const trimmedQuery = query.trim();
+		if (!trimmedQuery) {
 			searchError = 'Please enter a query.';
 			return;
 		}
 
-		// Add to search history
-		const trimmedQuery = query.trim();
 		if (!searchHistory.includes(trimmedQuery)) {
 			searchHistory = [trimmedQuery, ...searchHistory.slice(0, 9)];
-			localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+			writeJSON('searchHistory', searchHistory);
 		}
 
-		const encodedQuery = encodeURIComponent(query + ' ' + defaultQueryOptions);
-		const url = `https://api.scryfall.com/cards/search?q=${encodedQuery}`;
-		cards = [];
-		isLoading = true;
-		fetchCards(url);
+		showDropdown = false;
+		runSearch(buildSearchUrl(query, defaultQueryOptions));
 	};
 
-	const saveDefaultQueryOptions = () => {
-		localStorage.setItem('defaultQueryOptions', defaultQueryOptions);
+	const removeHistoryItem = (/** @type {string} */ item) => {
+		searchHistory = searchHistory.filter((entry) => entry !== item);
+		writeJSON('searchHistory', searchHistory);
 	};
 
-	// Handle card updates from child components
-	const handleCardUpdate = (updatedCards) => {
+	const clearHistory = () => {
+		searchHistory = [];
+		writeJSON('searchHistory', searchHistory);
+		showDropdown = false;
+	};
+
+	const handleCardUpdate = (/** @type {import('./types').Card[]} */ updatedCards) => {
 		cards = updatedCards;
 	};
 
-	const handleSingleCardUpdate = (updatedCard) => {
+	const handleSingleCardUpdate = (/** @type {import('./types').Card} */ updatedCard) => {
 		cards = cards.map((card) => (card.id === updatedCard.id ? updatedCard : card));
+	};
+
+	const handleRemove = (/** @type {string} */ id) => {
+		cards = cards.filter((card) => card.id !== id);
 	};
 </script>
 
@@ -212,41 +135,31 @@
 				<div class="mx-auto">
 					<button
 						onclick={() => (tipsModal = true)}
+						aria-label="Show tips"
 						class="absolute top-0 right-0 mt-4 mr-4 flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-indigo-600 font-serif text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
 					>
 						i
 					</button>
 
-					{#if tipsModal}
-						<div
-							class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={() => (tipsModal = false)}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') tipsModal = false;
-							}}
-							role="button"
-							tabindex="0"
-						>
-							<div
-								class="bg-opacity-90 rounded-lg bg-indigo-800 p-4 text-gray-200 sm:w-4/5 md:w-96"
-								role="document"
-							>
-								<h2 class="mb-2 text-lg font-semibold">Tips</h2>
-								<p class="mb-2">
-									Copy and paste the results into your deck using the Bulk Editor on Moxfield, or
-									you can download the text file and import it on Moxfield.
-								</p>
-								<ul>
-									<li class="mb-2">Click on each card to increase the count by one.</li>
-									<li class="mb-2">Hold Shift and click the card to decrease the count by one.</li>
-									<li class="mb-2">
-										Hold Ctrl and click a card to indicate that the card is foil or etched.
-									</li>
-									<li>Hold Shift and Ctrl and click a card to remove the foil status.</li>
-								</ul>
-							</div>
-						</div>
-					{/if}
+					<Modal
+						bind:show={tipsModal}
+						title="Tips"
+						onclose={() => (tipsModal = false)}
+						panelClass="bg-opacity-90 rounded-lg bg-indigo-800 p-4 text-gray-200 sm:w-4/5 md:w-96"
+					>
+						<p class="mb-2">
+							Copy and paste the results into your deck using the Bulk Editor on Moxfield, or you
+							can download the text file and import it on Moxfield.
+						</p>
+						<ul>
+							<li class="mb-2">Click on each card to increase the count by one.</li>
+							<li class="mb-2">Hold Shift and click the card to decrease the count by one.</li>
+							<li class="mb-2">
+								Hold Ctrl and click a card to indicate that the card is foil or etched.
+							</li>
+							<li>Hold Shift and Ctrl and click a card to remove the foil status.</li>
+						</ul>
+					</Modal>
 
 					<div>
 						<h1 class="text-2xl font-semibold text-gray-200">ScryMox</h1>
@@ -255,7 +168,7 @@
 						</p>
 					</div>
 
-					<div class="mt-5 text-red-500">
+					<div class="mt-5 text-red-300" role="alert">
 						{#if searchError}
 							<div>{searchError}</div>
 						{/if}
@@ -263,12 +176,14 @@
 
 					<div class="mt-5">
 						{#if isLoading}
-							<p class="mt-4 text-center text-gray-200">Loading...</p>
+							<p class="mt-4 text-center text-gray-200">
+								Loading {cards.length}{totalCards ? ` of ${totalCards}` : ''} cards…
+							</p>
 						{/if}
 					</div>
 
 					<form onsubmit={search} class="mt-8">
-						<div class="relative">
+						<div class="relative" bind:this={searchContainer}>
 							<input
 								type="text"
 								bind:value={query}
@@ -278,6 +193,7 @@
 							<button
 								type="button"
 								onclick={() => (showDropdown = !showDropdown)}
+								aria-label="Toggle search history"
 								class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
 							>
 								{showDropdown ? '▲' : '▼'}
@@ -287,20 +203,37 @@
 									class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg"
 									role="listbox"
 								>
-									{#each searchHistory as historyItem}
-										<li role="option" aria-selected="false">
+									{#each searchHistory as historyItem (historyItem)}
+										<li role="option" aria-selected="false" class="flex items-center">
 											<button
 												type="button"
 												onclick={() => {
 													query = historyItem;
 													showDropdown = false;
 												}}
-												class="w-full px-4 py-2 text-left text-gray-800 hover:bg-gray-100"
+												class="flex-1 px-4 py-2 text-left text-gray-800 hover:bg-gray-100"
 											>
 												{historyItem}
 											</button>
+											<button
+												type="button"
+												onclick={() => removeHistoryItem(historyItem)}
+												aria-label={`Remove ${historyItem} from history`}
+												class="px-3 py-2 text-gray-400 hover:text-red-500"
+											>
+												✕
+											</button>
 										</li>
 									{/each}
+									<li class="border-t border-gray-200">
+										<button
+											type="button"
+											onclick={clearHistory}
+											class="w-full px-4 py-2 text-left text-sm text-gray-500 hover:bg-gray-100"
+										>
+											Clear history
+										</button>
+									</li>
 								</ul>
 							{/if}
 						</div>
@@ -319,43 +252,32 @@
 						Default Query Options
 					</button>
 
-					{#if optionsModal}
-						<div
-							class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
-							onclick={() => (optionsModal = false)}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') optionsModal = false;
+					<Modal
+						bind:show={optionsModal}
+						title="Default Query Options"
+						onclose={saveDefaultQueryOptions}
+						panelClass="bg-opacity-90 rounded-lg bg-indigo-800 p-4 text-gray-200 sm:w-4/5 md:w-96"
+					>
+						<p class="text-gray-200">
+							Any additional queries listed here will be applied to all searches
+						</p>
+						<input
+							type="text"
+							bind:value={defaultQueryOptions}
+							placeholder="Default Query Options"
+							onblur={saveDefaultQueryOptions}
+							class="mt-4 block w-full rounded-md border-transparent bg-gray-200 pl-1.5 text-gray-800 focus:border-gray-500 focus:bg-white focus:ring-0"
+						/>
+						<button
+							onclick={() => {
+								saveDefaultQueryOptions();
+								optionsModal = false;
 							}}
-							role="button"
-							tabindex="0"
+							class="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
 						>
-							<div
-								class="bg-opacity-90 rounded-lg bg-indigo-800 p-4 sm:w-4/5 md:w-96"
-								role="document"
-							>
-								<h2 class="mb-2 text-lg font-semibold text-gray-200">Default Query Options</h2>
-								<p class="text-gray-200">
-									Any additional queries listed here will be applied to all searches
-								</p>
-								<input
-									type="text"
-									bind:value={defaultQueryOptions}
-									placeholder="Default Query Options"
-									onblur={saveDefaultQueryOptions}
-									class="mt-4 block w-full rounded-md border-transparent bg-gray-200 pl-1.5 text-gray-800 focus:border-gray-500 focus:bg-white focus:ring-0"
-								/>
-								<button
-									onclick={() => {
-										saveDefaultQueryOptions();
-										optionsModal = false;
-									}}
-									class="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
-								>
-									Save
-								</button>
-							</div>
-						</div>
-					{/if}
+							Save
+						</button>
+					</Modal>
 
 					{#if cards.length > 0}
 						<p class="mt-4 text-center text-gray-200">
@@ -388,13 +310,11 @@
 								CSV
 							</button>
 						</div>
-					{/if}
 
-					{#if !isLoading && cards.length > 0}
 						{#if selectedTab === 'Bulk Edit'}
-							<BulkEdit {cards} onupdate={handleSingleCardUpdate} />
+							<BulkEdit {cards} onupdate={handleSingleCardUpdate} onremove={handleRemove} />
 						{:else if selectedTab === 'CSV'}
-							<CSV {cards} onupdate={handleCardUpdate} />
+							<CSV {cards} onupdate={handleCardUpdate} onremove={handleRemove} />
 						{/if}
 					{/if}
 				</div>

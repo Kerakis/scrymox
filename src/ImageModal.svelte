@@ -1,28 +1,24 @@
 <script>
-	let { show = $bindable(false), selectedImages = [], onclose } = $props();
+	import Modal from './Modal.svelte';
 
-	$effect(() => {
-		if (show) {
-			document.body.style.overflow = 'hidden';
-		} else {
-			document.body.style.overflow = '';
-		}
-	});
+	/**
+	 * @type {{
+	 *   show?: boolean;
+	 *   selectedImages?: (string | undefined)[];
+	 *   onclose?: () => void;
+	 * }}
+	 */
+	let { show = $bindable(false), selectedImages = [], onclose } = $props();
 </script>
 
-{#if show}
-	<div
-		class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
-		onclick={() => onclose && onclose()}
-		onkeydown={(e) => {
-			if (e.key === 'Escape' && onclose) onclose();
-		}}
-		role="dialog"
-		aria-modal="true"
-		tabindex="-1"
-	>
-		{#each selectedImages as image (image)}
-			<img src={image} alt="" class="h-full w-full object-contain" />
-		{/each}
-	</div>
-{/if}
+<Modal
+	bind:show
+	{onclose}
+	panelClass="flex max-w-full items-center justify-center gap-2 bg-transparent p-2"
+>
+	{#each selectedImages as image (image)}
+		{#if image}
+			<img src={image} alt="" class="max-h-[85vh] max-w-full rounded-sm object-contain" />
+		{/if}
+	{/each}
+</Modal>

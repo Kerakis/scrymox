@@ -1,6 +1,7 @@
 import { FlatCompat } from '@eslint/eslintrc';
 import { fileURLToPath } from 'node:url';
-import svelteEslintParser from 'svelte-eslint-parser';
+import svelte from 'eslint-plugin-svelte';
+import globals from 'globals';
 
 const compat = new FlatCompat({
 	baseDirectory: fileURLToPath(new URL('.', import.meta.url)),
@@ -18,13 +19,12 @@ export default [
 		ignores: ['node_modules/**', 'dist/**', 'build/**']
 	},
 	...compat.extends('eslint:recommended'),
+	...svelte.configs['flat/recommended'],
 	{
-		files: ['**/*.svelte'],
 		languageOptions: {
-			parser: svelteEslintParser,
-			parserOptions: {
-				ecmaVersion: 'latest',
-				sourceType: 'module'
+			globals: {
+				...globals.browser,
+				...globals.node
 			}
 		}
 	}

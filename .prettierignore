@@ -1,0 +1,9 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Auto-generated, not worth reformatting
+package-lock.json

@@ -1,38 +1,67 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import device from 'svelte-device-info';
 	import ImageModal from './ImageModal.svelte';
+	import Modal from './Modal.svelte';
+	import { getDisplayFinish, getFinishPrice } from './lib/finishes.js';
 
-	let { card, displayMode = 'bulkEdit', onupdate } = $props();
+	/**
+	 * @type {{
+	 *   card: import('./types').Card;
+	 *   displayMode?: 'bulkEdit' | 'CSV';
+	 *   onupdate?: (card: import('./types').Card) => void;
+	 *   onremove?: (id: string) => void;
+	 * }}
+	 */
+	let { card, displayMode = 'bulkEdit', onupdate, onremove } = $props();
+	/** @type {HTMLImageElement | undefined} */
 	let cardImageFront = $state();
+	/** @type {HTMLImageElement | undefined} */
 	let cardImageBack = $state();
 	let cardImageFrontSrc = $state('');
 	let cardImageBackSrc = $state('');
 	let finishModal = $state(false);
 	let showImageModal = $state(false);
-	let selectedImages = $state(null);
+	/** @type {(string | undefined)[]} */
+	let selectedImages = $state([]);
 
-	// Remove the $effect that was mutating the card prop
-	// Instead, we'll handle this in the event handlers
-
-	const handleMouseOver = () => {
-		if (!device.isMobile) {
-			if (Array.isArray(card.image_uris)) {
-				cardImageFrontSrc = card.image_uris[0]?.border_crop;
-				cardImageBackSrc = card.image_uris[1]?.border_crop;
-			} else {
-				cardImageFrontSrc = card.image_uris?.border_crop;
-			}
-			if (cardImageFront) {
-				cardImageFront.classList.remove('hidden');
-			}
-			if (cardImageBack) {
-				cardImageBack.classList.remove('hidden');
-			}
+	/**
+	 * Applies a finish to a card copy, updating the marker and (unless the price
+	 * was set manually) the displayed price.
+	 * @param {import('./types').Card} target
+	 * @param {string} finish
+	 */
+	const applyFinish = (target, finish) => {
+		target.selectedFinish = finish;
+		target.displayFinish = getDisplayFinish(finish);
+		if (!target.priceManuallySet) {
+			target.displayedPrice = getFinishPrice(target.prices, finish);
 		}
 	};
 
-	const handleCtrlClick = (event) => {
+	const handleMouseOver = () => {
+		if (device.isMobile) return;
+		if (Array.isArray(card.image_uris)) {
+			cardImageFrontSrc = card.image_uris[0]?.border_crop ?? '';
+			cardImageBackSrc = card.image_uris[1]?.border_crop ?? '';
+		} else {
+			cardImageFrontSrc = card.image_uris?.border_crop ?? '';
+		}
+		// Only the hovered card tracks the pointer, so we never have more than one
+		// active mousemove listener regardless of how many cards are rendered.
+		window.addEventListener('mousemove', moveImage);
+		cardImageFront?.classList.remove('hidden');
+		cardImageBack?.classList.remove('hidden');
+	};
+
+	const handleMouseOut = () => {
+		if (device.isMobile) return;
+		window.removeEventListener('mousemove', moveImage);
+		cardImageFront?.classList.add('hidden');
+		cardImageBack?.classList.add('hidden');
+	};
+
+	const handleCardClick = (/** @type {MouseEvent} */ event) => {
 		if (device.isMobile) {
 			if (Array.isArray(card.image_uris)) {
 				selectedImages = card.image_uris.map((face) => face?.border_crop);
@@ -40,62 +69,34 @@
 				selectedImages = [card.image_uris?.border_crop];
 			}
 			showImageModal = true;
+			return;
+		}
+
+		let updatedCard = { ...card };
+
+		if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+			if (card.finishes.includes('foil') && card.finishes.includes('etched')) {
+				finishModal = true;
+				return; // Wait for the user to choose foil vs etched.
+			} else if (card.finishes.includes('foil')) {
+				applyFinish(updatedCard, 'foil');
+			} else if (card.finishes.includes('etched')) {
+				applyFinish(updatedCard, 'etched');
+			}
+		} else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+			if (card.finishes.includes('nonfoil')) {
+				applyFinish(updatedCard, '');
+			}
+		} else if (event.shiftKey) {
+			if (updatedCard.count > 1) updatedCard.count -= 1;
 		} else {
-			let updatedCard = { ...card };
-
-			if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-				if (card.finishes.includes('foil') && card.finishes.includes('etched')) {
-					finishModal = true;
-					return; // Don't update yet, wait for user selection
-				} else if (card.finishes.includes('foil')) {
-					updatedCard.selectedFinish = 'foil';
-					updatedCard.displayFinish = '*F*';
-					if (!updatedCard.priceManuallySet) {
-						updatedCard.displayedPrice = updatedCard.prices.usd_foil;
-					}
-				} else if (card.finishes.includes('etched')) {
-					updatedCard.selectedFinish = 'etched';
-					updatedCard.displayFinish = '*E*';
-					if (!updatedCard.priceManuallySet) {
-						updatedCard.displayedPrice = updatedCard.prices.usd_etched;
-					}
-				}
-			} else if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-				if (card.finishes.includes('nonfoil')) {
-					updatedCard.selectedFinish = '';
-					updatedCard.displayFinish = '';
-					if (!updatedCard.priceManuallySet) {
-						updatedCard.displayedPrice = updatedCard.prices.usd;
-					}
-				}
-			} else {
-				if (event.shiftKey) {
-					if (updatedCard.count > 1) {
-						updatedCard.count -= 1;
-					}
-				} else {
-					if (updatedCard.count < 99) {
-						updatedCard.count += 1;
-					}
-				}
-			}
-
-			if (onupdate) onupdate(updatedCard);
+			if (updatedCard.count < 99) updatedCard.count += 1;
 		}
+
+		onupdate?.(updatedCard);
 	};
 
-	const handleMouseOut = () => {
-		if (!device.isMobile) {
-			if (cardImageFront) {
-				cardImageFront.classList.add('hidden');
-			}
-			if (cardImageBack) {
-				cardImageBack.classList.add('hidden');
-			}
-		}
-	};
-
-	const moveImage = (event) => {
+	const moveImage = (/** @type {MouseEvent} */ event) => {
 		if (cardImageFront) {
 			cardImageFront.style.top = `${event.clientY + 5}px`;
 			cardImageFront.style.left = `${event.clientX + 5}px`;
@@ -106,112 +107,76 @@
 		}
 	};
 
-	const handleEscape = (event) => {
-		if (event.key === 'Escape') {
-			finishModal = false;
-		}
-	};
-
-	const handleFinishSelection = (finish) => {
+	const handleFinishSelection = (/** @type {string} */ finish) => {
 		let updatedCard = { ...card };
-
-		if (finish === 'foil') {
-			updatedCard.displayFinish = '*F*';
-			updatedCard.selectedFinish = 'foil';
-			if (!updatedCard.priceManuallySet) {
-				updatedCard.displayedPrice = updatedCard.prices.usd_foil;
-			}
-		} else if (finish === 'etched') {
-			updatedCard.displayFinish = '*E*';
-			updatedCard.selectedFinish = 'etched';
-			if (!updatedCard.priceManuallySet) {
-				updatedCard.displayedPrice = updatedCard.prices.usd_etched;
-			}
-		}
-
+		applyFinish(updatedCard, finish);
 		finishModal = false;
-		if (onupdate) onupdate(updatedCard);
+		onupdate?.(updatedCard);
 	};
-
-	const stopPropagation = (event) => {
-		event.stopPropagation();
-	};
-
-	onMount(() => {
-		window.addEventListener('mousemove', moveImage);
-		window.addEventListener('keydown', handleEscape);
-	});
 
 	onDestroy(() => {
 		window.removeEventListener('mousemove', moveImage);
-		window.removeEventListener('keydown', handleEscape);
 	});
 </script>
 
 <div class="relative">
-	{#if displayMode === 'bulkEdit'}
+	<div class="flex items-center gap-1">
+		{#if displayMode === 'bulkEdit'}
+			<button
+				type="button"
+				onclick={handleCardClick}
+				onmouseover={handleMouseOver}
+				onmouseout={handleMouseOut}
+				onfocus={handleMouseOver}
+				onblur={handleMouseOut}
+				class="flex-1 text-left"
+			>
+				{card.count}
+				{card.name} ({card.set}) {card.collector_number}
+				{card.displayFinish}
+			</button>
+		{:else if displayMode === 'CSV'}
+			<button
+				type="button"
+				onclick={handleCardClick}
+				onmouseover={handleMouseOver}
+				onmouseout={handleMouseOut}
+				onfocus={handleMouseOver}
+				onblur={handleMouseOut}
+				class="min-w-0 flex-1 truncate text-left text-gray-200"
+			>
+				{card.name}
+			</button>
+		{/if}
+		{#if onremove}
+			<button
+				type="button"
+				onclick={() => onremove?.(card.id)}
+				aria-label={`Remove ${card.name}`}
+				class="shrink-0 rounded-sm px-1 text-gray-400 hover:text-red-400 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+			>
+				✕
+			</button>
+		{/if}
+	</div>
+
+	<Modal bind:show={finishModal} title={card.name} onclose={() => (finishModal = false)}>
 		<button
-			type="button"
-			onclick={handleCtrlClick}
-			onmouseover={handleMouseOver}
-			onmouseout={handleMouseOut}
-			onfocus={handleMouseOver}
-			onblur={handleMouseOut}
-			class="text-left"
+			onclick={() => handleFinishSelection('foil')}
+			class="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
 		>
-			{card.count}
-			{card.name} ({card.set}) {card.collector_number}
-			{card.displayFinish === '*F*' ? '*F*' : card.displayFinish === '*E*' ? '*E*' : ''}
+			Foil
 		</button>
-	{:else if displayMode === 'CSV'}
-		<div class="flex items-center">
-			<div class="min-w-0 flex-1">
-				<button
-					type="button"
-					onclick={handleCtrlClick}
-					onmouseover={handleMouseOver}
-					onmouseout={handleMouseOut}
-					onfocus={handleMouseOver}
-					onblur={handleMouseOut}
-					class="w-full text-left text-gray-200"
-				>
-					{card.name}
-				</button>
-			</div>
-		</div>
-	{/if}
-
-	{#if finishModal}
-		<div
-			class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
-			onclick={() => (finishModal = false)}
-			onkeydown={(e) => {
-				if (e.key === 'Escape') finishModal = false;
-			}}
-			role="button"
-			tabindex="0"
+		<button
+			onclick={() => handleFinishSelection('etched')}
+			class="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
 		>
-			<div class="bg-opacity-90 rounded-lg bg-indigo-800 p-4" role="document">
-				<h2 class="mb-2 text-lg font-semibold">{card.name}</h2>
-				<button
-					onclick={() => handleFinishSelection('foil')}
-					class="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
-				>
-					Foil
-				</button>
-
-				<button
-					onclick={() => handleFinishSelection('etched')}
-					class="mt-4 flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-gray-200 shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden"
-				>
-					Etched
-				</button>
-			</div>
-		</div>
-	{/if}
+			Etched
+		</button>
+	</Modal>
 
 	{#if Array.isArray(card.image_uris)}
-		{#if card.image_uris[0] && card.image_uris[0].border_crop}
+		{#if card.image_uris[0]?.border_crop}
 			<img
 				bind:this={cardImageFront}
 				src={cardImageFrontSrc}
@@ -219,7 +184,7 @@
 				class="fixed z-50 hidden max-w-62.5 rounded-sm"
 			/>
 		{/if}
-		{#if card.image_uris.length > 1 && card.image_uris[1] && card.image_uris[1].border_crop}
+		{#if card.image_uris[1]?.border_crop}
 			<img
 				bind:this={cardImageBack}
 				src={cardImageBackSrc}
@@ -227,7 +192,7 @@
 				class="fixed z-50 hidden max-w-62.5 rounded-sm"
 			/>
 		{/if}
-	{:else if card.image_uris && card.image_uris.border_crop}
+	{:else if card.image_uris?.border_crop}
 		<img
 			bind:this={cardImageFront}
 			src={cardImageFrontSrc}
