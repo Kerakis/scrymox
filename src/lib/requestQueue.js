@@ -4,9 +4,9 @@
  * limits access for ~30s). `fetch`/`sleep`/`now` are injectable for tests.
  */
 
-export const DEFAULT_MIN_INTERVAL_MS = 500; // /cards/search = 2 req/sec
-export const DEFAULT_BACKOFF_MS = 30_000; // documented 429 lockout
-export const MAX_RETRIES = 3;
+const DEFAULT_MIN_INTERVAL_MS = 500; // /cards/search = 2 req/sec
+const DEFAULT_BACKOFF_MS = 30_000; // documented 429 lockout
+const MAX_RETRIES = 3;
 
 const realSleep = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
 

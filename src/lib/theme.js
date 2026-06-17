@@ -7,7 +7,7 @@
  */
 import { readString, writeString } from './storage.js';
 
-export const THEME_KEY = 'scrymox:theme';
+const THEME_KEY = 'scrymox:theme';
 
 /** @param {any} [store] @returns {Theme} */
 export const getStoredTheme = (store) =>
