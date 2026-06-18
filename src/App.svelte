@@ -241,7 +241,21 @@
 		<div
 			class="mx-auto flex max-w-[1800px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-white"
 		>
-			<h1 class="text-xl font-bold">ScryMox</h1>
+			<div class="flex items-center gap-2">
+				<svg viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7 shrink-0" aria-hidden="true">
+					<rect
+						x="4"
+						y="5"
+						width="12"
+						height="16"
+						rx="2"
+						opacity="0.5"
+						transform="rotate(-8 10 13)"
+					/>
+					<rect x="8" y="4" width="12" height="16" rx="2" transform="rotate(7 14 12)" />
+				</svg>
+				<h1 class="text-xl font-bold">ScryMox</h1>
+			</div>
 			<div class="order-last w-full sm:order-0 sm:w-auto sm:flex-1">
 				<SearchBar
 					bind:query
@@ -256,7 +270,32 @@
 					onclearhistory={clearHistory}
 				/>
 			</div>
-			<div class="ml-auto flex items-center gap-2">
+			<div class="ml-auto flex items-center gap-1">
+				<Tooltip text="Scryfall syntax guide">
+					<a
+						href="https://scryfall.com/docs/syntax"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="Scryfall syntax guide"
+						class="flex items-center justify-center rounded-full bg-white/15 p-2 text-white hover:bg-white/25"
+					>
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							class="h-4 w-4"
+						>
+							<circle cx="12" cy="12" r="10" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"
+							/>
+							<path stroke-linecap="round" d="M12 17h.01" />
+						</svg>
+					</a>
+				</Tooltip>
 				<ThemeToggle bind:theme onchange={onThemeChange} />
 				<Tooltip text="Settings">
 					<button
