@@ -180,7 +180,7 @@
 	>
 	<button
 		type="button"
-		class="rounded-md bg-red-500/20 px-2 py-1 text-red-300"
+		class="rounded-md bg-red-100 px-2 py-1 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
 		onclick={() => {
 			onremove?.(scope);
 			open = null;

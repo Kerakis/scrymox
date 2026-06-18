@@ -18,25 +18,46 @@
 		onthemechange
 	} = $props();
 
-	// Flash a "Saved" hint when the default query changes (it persists live).
+	// Flash a "Saved" hint once typing settles (debounced), so it doesn't fire on
+	// every keystroke even though the value persists live.
 	let savedFlash = $state(false);
 	let firstRun = true;
+	/** @type {ReturnType<typeof setTimeout> | undefined} */
+	let hideTimer;
 	$effect(() => {
 		void defaultQueryOptions;
 		if (firstRun) {
 			firstRun = false;
 			return;
 		}
-		savedFlash = true;
-		const t = setTimeout(() => (savedFlash = false), 1500);
-		return () => clearTimeout(t);
+		const showTimer = setTimeout(() => {
+			savedFlash = true;
+			hideTimer = setTimeout(() => (savedFlash = false), 2000);
+		}, 700);
+		return () => {
+			clearTimeout(showTimer);
+			clearTimeout(hideTimer);
+		};
 	});
 </script>
 
 <Drawer bind:show title="Settings">
 	<div class="mb-1 flex items-center gap-2">
 		<label class="text-sm font-medium" for="default-query">Default query options</label>
-		{#if savedFlash}<span class="text-xs font-medium text-green-500">Saved</span>{/if}
+		{#if savedFlash}
+			<span class="flex items-center gap-1 text-xs font-medium text-green-500">
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					class="h-3.5 w-3.5"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+				</svg>
+				Saved
+			</span>
+		{/if}
 	</div>
 	<p class="mb-2 text-sm text-muted">
 		Appended to every search and saved automatically.
