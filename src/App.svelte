@@ -273,7 +273,7 @@
 				/>
 			</div>
 			<div class="ml-auto flex items-center gap-1">
-				<Tooltip text="Scryfall syntax guide" align="right">
+				<Tooltip text="Scryfall syntax guide" align="right" side="bottom">
 					<a
 						href="https://scryfall.com/docs/syntax"
 						target="_blank"
@@ -299,7 +299,7 @@
 					</a>
 				</Tooltip>
 				<ThemeToggle bind:theme onchange={onThemeChange} />
-				<Tooltip text="Settings" align="right">
+				<Tooltip text="Settings" align="right" side="bottom">
 					<button
 						type="button"
 						aria-label="Settings"
