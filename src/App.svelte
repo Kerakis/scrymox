@@ -238,7 +238,7 @@
 
 <svelte:window onkeydown={onKeydown} onscroll={() => (showBackToTop = window.scrollY > 400)} />
 
-<div class="flex min-h-screen flex-col bg-bg text-text">
+<div class="flex min-h-screen flex-col bg-bg text-text {selectedIds.size > 0 ? 'pb-24' : ''}">
 	<header class="bg-linear-to-r from-(--bar-from) to-(--bar-to) shadow">
 		<div
 			class="mx-auto flex max-w-[1800px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-white"
@@ -398,17 +398,6 @@
 				class="mt-3 w-full rounded-md bg-accent px-4 py-2 text-accent-contrast lg:hidden"
 				>Export</button
 			>
-
-			{#if selectedIds.size > 0}
-				<div class="sticky bottom-0 z-30 mt-3">
-					<BulkActionBar
-						selectedCount={selectedIds.size}
-						totalCount={cards.length}
-						onapply={onBulkApply}
-						onremove={onBulkRemove}
-					/>
-				</div>
-			{/if}
 		</main>
 	{:else if isLoading}
 		<p class="mx-auto max-w-[1800px] p-6 text-center text-muted">Loading cards…</p>
@@ -438,21 +427,18 @@
 	/>
 	<BottomSheet bind:show={exportOpen} title="Export"><ExportPanel {cards} {source} /></BottomSheet>
 
-	{#if showBackToTop}
-		<!-- Aligned to the content track; lifts above the bulk bar when it is open. -->
-		<div
-			class="pointer-events-none fixed inset-x-0 z-40 {selectedIds.size > 0
-				? 'bottom-20'
-				: 'bottom-4'}"
-			transition:fade={{ duration: 200 }}
-		>
-			<div class="mx-auto flex max-w-[1800px] justify-end px-3">
+	<!-- Bottom cluster pinned to the viewport in the content track: back-to-top
+	     stacks above the bulk bar so they never overlap, at any scroll position. -->
+	<div class="pointer-events-none fixed inset-x-0 bottom-0 z-40">
+		<div class="mx-auto flex max-w-[1800px] flex-col items-end gap-3 px-3 pb-3">
+			{#if showBackToTop}
 				<button
 					type="button"
 					onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
 					aria-label="Back to top"
 					title="Back to top"
-					class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-surface text-text shadow-lg ring-1 ring-border hover:bg-surface-2"
+					transition:fade={{ duration: 200 }}
+					class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-md bg-surface text-text shadow-lg ring-1 ring-border hover:bg-surface-2"
 				>
 					<svg
 						viewBox="0 0 24 24"
@@ -464,7 +450,17 @@
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 15l6-6 6 6" />
 					</svg>
 				</button>
-			</div>
+			{/if}
+			{#if selectedIds.size > 0}
+				<div class="pointer-events-auto w-full">
+					<BulkActionBar
+						selectedCount={selectedIds.size}
+						totalCount={cards.length}
+						onapply={onBulkApply}
+						onremove={onBulkRemove}
+					/>
+				</div>
+			{/if}
 		</div>
-	{/if}
+	</div>
 </div>
