@@ -15,6 +15,10 @@
 	// Menus are positioned `fixed` from the trigger so the bar can scroll
 	// horizontally without clipping them (overflow can't be x-auto + y-visible).
 	let menuStyle = $state('');
+	// Bound to the qty/price inputs so a tap-able ✓ button can submit them —
+	// a mobile number pad has no Enter key. ponytail: two vars beats a DOM ref.
+	let qtyInput = $state('');
+	let priceInput = $state('');
 
 	const toggle = (/** @type {string} */ id, /** @type {MouseEvent} */ e) => {
 		if (open === id) {
@@ -28,6 +32,18 @@
 	const apply = (/** @type {Partial<import('./types').Card>} */ p) => {
 		onapply?.(p, scope);
 		open = null;
+	};
+	const applyQty = (/** @type {string} */ v) => {
+		const n = parseInt(v);
+		if (Number.isNaN(n)) return;
+		apply({ count: Math.min(99, Math.max(1, n)) });
+		qtyInput = '';
+	};
+	const applyPrice = (/** @type {string} */ v) => {
+		const n = parseFloat(v);
+		if (Number.isNaN(n) || n < 0) return;
+		apply({ price: n, priceManuallySet: true });
+		priceInput = '';
 	};
 	const count = $derived(scope === 'all' ? totalCount : selectedCount);
 </script>
@@ -72,7 +88,7 @@
 	>
 	{#if open === 'qty'}
 		<div
-			class="fixed z-50 rounded-md bg-surface p-2 shadow-lg ring-1 ring-border"
+			class="fixed z-50 flex items-center gap-1 rounded-md bg-surface p-2 shadow-lg ring-1 ring-border"
 			style={menuStyle}
 		>
 			<input
@@ -80,11 +96,16 @@
 				min="1"
 				max="99"
 				placeholder="Qty"
-				onkeydown={(e) =>
-					e.key === 'Enter' &&
-					apply({ count: Math.min(99, Math.max(1, parseInt(e.currentTarget.value))) })}
+				bind:value={qtyInput}
+				onkeydown={(e) => e.key === 'Enter' && applyQty(qtyInput)}
 				class="w-20 rounded-md bg-surface-2 px-2 py-1 ring-1 ring-border"
 			/>
+			<button
+				type="button"
+				aria-label="Apply quantity"
+				onclick={() => applyQty(qtyInput)}
+				class="rounded-md bg-accent px-2 py-1 text-accent-contrast">✓</button
+			>
 		</div>
 	{/if}
 
@@ -152,19 +173,26 @@
 		>
 			<button
 				type="button"
-				class="px-3 py-1 text-left hover:bg-accent/20"
+				class="rounded-md px-3 py-1 text-left hover:bg-accent/20"
 				onclick={() => apply({ price: undefined, priceManuallySet: false })}>Reset to auto</button
 			>
-			<input
-				type="number"
-				step="0.01"
-				min="0"
-				placeholder="Set price"
-				onkeydown={(e) =>
-					e.key === 'Enter' &&
-					apply({ price: parseFloat(e.currentTarget.value), priceManuallySet: true })}
-				class="w-24 rounded-md bg-surface-2 px-2 py-1 ring-1 ring-border"
-			/>
+			<div class="flex items-center gap-1">
+				<input
+					type="number"
+					step="0.01"
+					min="0"
+					placeholder="Set price"
+					bind:value={priceInput}
+					onkeydown={(e) => e.key === 'Enter' && applyPrice(priceInput)}
+					class="w-24 rounded-md bg-surface-2 px-2 py-1 ring-1 ring-border"
+				/>
+				<button
+					type="button"
+					aria-label="Apply price"
+					onclick={() => applyPrice(priceInput)}
+					class="rounded-md bg-accent px-2 py-1 text-accent-contrast">✓</button
+				>
+			</div>
 		</div>
 	{/if}
 
