@@ -51,7 +51,6 @@
 	let settingsOpen = $state(false);
 	let exportOpen = $state(false);
 	let showBackToTop = $state(false);
-	let lastQuery = '';
 
 	const ids = $derived(cards.map((c) => c.id));
 	const orderedIds = () => ids;
@@ -73,16 +72,6 @@
 	// ---- persistence ----
 	onMount(() => {
 		searchHistory = readJSON('scrymox:history', []);
-		const saved =
-			/** @type {{ cards?: import('./types').Card[], totalCards?: number, query?: string } | null} */ (
-				readJSON('scrymox:working:v2', null)
-			);
-		if (saved) {
-			cards = saved.cards ?? [];
-			totalCards = saved.totalCards ?? cards.length;
-			lastQuery = saved.query ?? '';
-			query = saved.query ?? '';
-		}
 		// react to OS theme changes while in 'system'
 		const mq = window.matchMedia('(prefers-color-scheme: dark)');
 		const onMq = () => applyTheme(resolveTheme(theme, mq.matches));
@@ -99,10 +88,6 @@
 	$effect(() => {
 		writeString('scrymox:view', view);
 	});
-	$effect(() => {
-		writeJSON('scrymox:working:v2', { query: lastQuery, cards, totalCards });
-	});
-
 	const onThemeChange = (/** @type {import('./lib/theme').Theme} */ t) => {
 		theme = t;
 		setStoredTheme(t);
@@ -121,7 +106,6 @@
 		bulkNote = '';
 		selectedIds = clear();
 		page = 1;
-		lastQuery = trimmed;
 
 		const cached = readCache(`${trimmed} ${defaultQueryOptions}`);
 		if (cached) {
