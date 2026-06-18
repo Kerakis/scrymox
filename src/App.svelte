@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import SearchBar from './SearchBar.svelte';
 	import ResultsToolbar from './ResultsToolbar.svelte';
 	import SettingsDrawer from './SettingsDrawer.svelte';
@@ -438,16 +439,32 @@
 	<BottomSheet bind:show={exportOpen} title="Export"><ExportPanel {cards} {source} /></BottomSheet>
 
 	{#if showBackToTop}
-		<button
-			type="button"
-			onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-			aria-label="Back to top"
-			title="Back to top"
-			class="fixed right-4 bottom-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-contrast shadow-lg hover:bg-accent-strong"
+		<!-- Aligned to the content track; lifts above the bulk bar when it is open. -->
+		<div
+			class="pointer-events-none fixed inset-x-0 z-40 {selectedIds.size > 0
+				? 'bottom-20'
+				: 'bottom-4'}"
+			transition:fade={{ duration: 200 }}
 		>
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6 15l6-6 6 6" />
-			</svg>
-		</button>
+			<div class="mx-auto flex max-w-[1800px] justify-end px-3">
+				<button
+					type="button"
+					onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+					aria-label="Back to top"
+					title="Back to top"
+					class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-surface text-text shadow-lg ring-1 ring-border hover:bg-surface-2"
+				>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						class="h-5 w-5"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 15l6-6 6 6" />
+					</svg>
+				</button>
+			</div>
+		</div>
 	{/if}
 </div>
