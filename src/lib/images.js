@@ -22,12 +22,10 @@ export const isDoubleFaced = (card) => {
 	return faces.length > 1 && !!faces[1];
 };
 
-/** Small inline image (tiles/preview). @param {FaceUris | undefined} face */
-export const inlineImage = (face) => face?.border_crop ?? face?.normal ?? '';
-
 /**
- * Large image for zoom/preview. Prefer `png`: it has transparent, consistently
- * rounded corners across all cards (the `large` JPEG's corner treatment varies).
+ * Card image for tiles and the preview. `border_crop` is the card cropped
+ * square to the edge (rounded corners removed) — small, and CSS `border-radius`
+ * re-rounds it cleanly and consistently across all cards.
  * @param {FaceUris | undefined} face
  */
-export const zoomImage = (face) => face?.png ?? face?.large ?? face?.normal ?? inlineImage(face);
+export const inlineImage = (face) => face?.border_crop ?? face?.normal ?? '';

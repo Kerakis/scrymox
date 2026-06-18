@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { getFaces, isDoubleFaced, inlineImage, zoomImage } from './images.js';
+import { getFaces, isDoubleFaced, inlineImage } from './images.js';
 
 test('getFaces wraps a single image object in an array', () => {
 	expect(getFaces(/** @type {any} */ ({ image_uris: { border_crop: 'a' } }))).toEqual([
@@ -22,11 +22,8 @@ test('isDoubleFaced only when a real second face exists', () => {
 	).toBe(true);
 });
 
-test('inlineImage and zoomImage prefer the right sizes', () => {
+test('inlineImage prefers border_crop, then normal', () => {
 	expect(inlineImage({ border_crop: 'bc', normal: 'n' })).toBe('bc');
 	expect(inlineImage({ normal: 'n' })).toBe('n');
 	expect(inlineImage(undefined)).toBe('');
-	expect(zoomImage({ large: 'l', png: 'p', border_crop: 'bc' })).toBe('p');
-	expect(zoomImage({ large: 'l', border_crop: 'bc' })).toBe('l');
-	expect(zoomImage({ border_crop: 'bc' })).toBe('bc');
 });

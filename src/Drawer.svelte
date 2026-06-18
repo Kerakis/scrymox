@@ -8,8 +8,13 @@
 	$effect(() => {
 		if (!show) return;
 		document.body.style.overflow = 'hidden';
+		const onKey = (/** @type {KeyboardEvent} */ e) => {
+			if (e.key === 'Escape') close();
+		};
+		window.addEventListener('keydown', onKey);
 		return () => {
 			document.body.style.overflow = '';
+			window.removeEventListener('keydown', onKey);
 		};
 	});
 </script>

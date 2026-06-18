@@ -236,7 +236,7 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<div class="min-h-screen bg-bg text-text">
+<div class="flex min-h-screen flex-col bg-bg text-text">
 	<header class="bg-linear-to-r from-(--bar-from) to-(--bar-to) shadow">
 		<div
 			class="mx-auto flex max-w-[1800px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-white"
@@ -285,7 +285,13 @@
 
 	{#if cards.length > 0}
 		<main class="mx-auto max-w-[1800px] p-3">
-			<ResultsToolbar {totalCards} selectedCount={selectedIds.size} bind:source bind:view />
+			<ResultsToolbar
+				{totalCards}
+				selectedCount={selectedIds.size}
+				bind:source
+				bind:view
+				defaultQuery={defaultQueryOptions}
+			/>
 			{#if bulkNote}<p class="px-1 py-1 text-sm text-amber-500">{bulkNote}</p>{/if}
 
 			<div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_480px] 2xl:grid-cols-[1fr_580px]">
@@ -372,6 +378,15 @@
 			Enter a Scryfall query to begin.
 		</p>
 	{/if}
+
+	<footer class="mt-auto px-4 py-6 text-center text-xs text-muted">
+		<a
+			href="https://github.com/Kerakis"
+			target="_blank"
+			rel="noopener noreferrer"
+			class="hover:text-text hover:underline">Kerakis © {new Date().getFullYear()}</a
+		>
+	</footer>
 
 	<SettingsDrawer
 		bind:show={settingsOpen}

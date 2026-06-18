@@ -17,12 +17,29 @@
 		theme = $bindable('system'),
 		onthemechange
 	} = $props();
+
+	// Flash a "Saved" hint when the default query changes (it persists live).
+	let savedFlash = $state(false);
+	let firstRun = true;
+	$effect(() => {
+		void defaultQueryOptions;
+		if (firstRun) {
+			firstRun = false;
+			return;
+		}
+		savedFlash = true;
+		const t = setTimeout(() => (savedFlash = false), 1500);
+		return () => clearTimeout(t);
+	});
 </script>
 
 <Drawer bind:show title="Settings">
-	<label class="mb-1 block text-sm font-medium" for="default-query">Default query options</label>
+	<div class="mb-1 flex items-center gap-2">
+		<label class="text-sm font-medium" for="default-query">Default query options</label>
+		{#if savedFlash}<span class="text-xs font-medium text-green-500">Saved</span>{/if}
+	</div>
 	<p class="mb-2 text-sm text-muted">
-		Appended to every search.
+		Appended to every search and saved automatically.
 		<a
 			href="https://scryfall.com/docs/syntax"
 			target="_blank"
@@ -61,13 +78,4 @@
 		<option value="light">Light</option>
 		<option value="dark">Dark</option>
 	</select>
-
-	<footer class="mt-8 border-t border-border pt-3 text-center text-xs text-muted">
-		<a
-			href="https://github.com/Kerakis"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="hover:text-text hover:underline">Kerakis © {new Date().getFullYear()}</a
-		>
-	</footer>
 </Drawer>
