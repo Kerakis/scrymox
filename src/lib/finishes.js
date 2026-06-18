@@ -35,14 +35,14 @@ export const getDisplayFinish = (selectedFinish) => {
 };
 
 /**
- * Returns the price string for a given finish, or null when unavailable.
- * @param {import('../types').CardPrices | undefined} prices
- * @param {string | null} selectedFinish
- * @returns {string | null}
+ * True when `finish` is offered by the card's `finishes`. '' maps to 'nonfoil'.
+ * @param {string[]} finishes
+ * @param {string | null} finish
+ * @returns {boolean}
  */
-export const getFinishPrice = (prices, selectedFinish) => {
-	if (!prices) return null;
-	if (selectedFinish === 'foil') return prices.usd_foil ?? null;
-	if (selectedFinish === 'etched') return prices.usd_etched ?? null;
-	return prices.usd ?? null;
+export const isFinishAllowed = (finishes, finish) => {
+	if (finish === '') return finishes.includes('nonfoil');
+	if (finish === 'foil') return finishes.includes('foil');
+	if (finish === 'etched') return finishes.includes('etched');
+	return false;
 };

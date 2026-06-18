@@ -1,15 +1,60 @@
 @import 'tailwindcss';
-@layer base {
-	*,
-	::after,
-	::before,
-	::backdrop,
-	::file-selector-button {
-		border-color: var(--color-gray-200, currentcolor);
-	}
+
+/* Class-based dark mode: components use `dark:` utilities; .dark on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Twilight Purple palette — light defaults, overridden under .dark. */
+:root {
+	--bg: #f5f1fc;
+	--surface: #ffffff;
+	--surface-2: #faf7ff;
+	--border: #e7def5;
+	--text: #1d1730;
+	--muted: #6f6488;
+	--accent: #7e22ce;
+	--accent-strong: #6b21a8;
+	--accent-contrast: #ffffff;
+	--bar-from: #7e22ce;
+	--bar-to: #a855f7;
+}
+
+.dark {
+	--bg: #120f1c;
+	--surface: #1d1730;
+	--surface-2: #171127;
+	--border: #352b50;
+	--text: #ece8f7;
+	--muted: #a99ccb;
+	--accent: #a855f7;
+	--accent-strong: #9333ea;
+	--accent-contrast: #ffffff;
+	--bar-from: #6d28d9;
+	--bar-to: #a855f7;
+}
+
+@theme {
+	--font-brand: 'Space Grotesk', system-ui, sans-serif;
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-2: var(--surface-2);
+	--color-border: var(--border);
+	--color-text: var(--text);
+	--color-muted: var(--muted);
+	--color-accent: var(--accent);
+	--color-accent-strong: var(--accent-strong);
+	--color-accent-contrast: var(--accent-contrast);
 }
 
 @layer base {
+	html {
+		background-color: var(--bg);
+		color: var(--text);
+		color-scheme: light;
+	}
+	html.dark {
+		color-scheme: dark;
+	}
+	/* Strip number-input spinners (kept from the original app). */
 	input[type='number']::-webkit-outer-spin-button,
 	input[type='number']::-webkit-inner-spin-button,
 	input[type='number'] {

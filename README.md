@@ -10,7 +10,7 @@ Quickly transform a Scryfall query into an importable list of cards for Moxfield
 
 ## Tips
 
-- Click on each card to increase the count by one.
-- Hold Shift and click the card to decrease the count by one.
-- Hold Ctrl and click a card to indicate that the card is foil or etched.
-- Hold Shift and Ctrl and click a card to remove the foil status.
+- Search with Scryfall syntax; set a Default Query (e.g. `not:digital`) in Settings to apply to every search.
+- Edit any card's quantity, finish, condition, language, price, alter, and proxy directly on its tile (or in Compact view).
+- Select cards (Click, Shift+Click for a range, Ctrl/⌘+Click to add, Ctrl/⌘+A for all, Esc to clear) and use the bulk bar to change many at once.
+- Export as Moxfield Bulk Edit text or CSV — copy or download either.

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { readJSON, writeJSON, readString, writeString } from './storage.js';
+import { readJSON, writeJSON, readString, writeString, removeKey } from './storage.js';
 
 /** Minimal in-memory localStorage stand-in. */
 const makeStore = (/** @type {Record<string, string>} */ seed = {}) => {
@@ -43,5 +43,19 @@ describe('readString / writeString', () => {
 
 	it('returns the fallback for a missing key', () => {
 		expect(readString('tab', 'Bulk Edit', store)).toBe('Bulk Edit');
+	});
+});
+
+describe('removeKey', () => {
+	it('deletes a stored value', () => {
+		/** @type {Map<string, string>} */
+		const map = new Map([['k', 'v']]);
+		const removable = {
+			getItem: (/** @type {string} */ k) => map.get(k) ?? null,
+			setItem: (/** @type {string} */ k, /** @type {string} */ v) => map.set(k, v),
+			removeItem: (/** @type {string} */ k) => map.delete(k)
+		};
+		removeKey('k', removable);
+		expect(readString('k', 'fallback', removable)).toBe('fallback');
 	});
 });

@@ -16,7 +16,6 @@ const makeCard = (overrides = {}) => ({
 	alter: false,
 	proxy: false,
 	prices: { usd: '1.00' },
-	displayedPrice: '1.00',
 	priceManuallySet: false,
 	...overrides
 });
@@ -39,18 +38,24 @@ describe('buildBulkText', () => {
 });
 
 describe('buildCsv', () => {
-	it('emits the Moxfield header row', () => {
+	it('emits the Moxfield header row ending with Scryfall ID', () => {
 		const [header] = buildCsv([makeCard()]).split('\n');
 		expect(header).toBe(
-			'Count,Name,Edition,Collector Number,Condition,Language,Foil,Alter,Proxy,Price'
+			'Count,Name,Edition,Collector Number,Condition,Language,Foil,Alter,Proxy,Purchase Price,Scryfall ID'
 		);
 	});
 
-	it('uppercases the edition and maps finish/alter/proxy', () => {
+	it('uppercases the edition, maps finish, writes TRUE/FALSE alter/proxy, and appends the id', () => {
 		const [, row] = buildCsv([
-			makeCard({ selectedFinish: 'foil', alter: true, proxy: false })
+			makeCard({
+				id: 'sid-1',
+				selectedFinish: 'foil',
+				alter: true,
+				proxy: false,
+				prices: { usd: '1.00', usd_foil: '2.00' }
+			})
 		]).split('\n');
-		expect(row).toBe('1,"Lightning Bolt",LEA,161,NM,EN,foil,Yes,,1.00');
+		expect(row).toBe('1,"Lightning Bolt",LEA,161,NM,EN,foil,TRUE,FALSE,2.00,sid-1');
 	});
 
 	it('escapes embedded quotes in card names per CSV rules', () => {
@@ -58,18 +63,24 @@ describe('buildCsv', () => {
 		expect(row).toContain('"Ach! Hans, ""Run!"""');
 	});
 
-	it('uses the manual price when set, otherwise the auto price', () => {
-		const [, manual] = buildCsv([makeCard({ price: 9.5, priceManuallySet: true })]).split('\n');
-		expect(manual.endsWith(',9.5')).toBe(true);
-
-		const [, auto] = buildCsv([makeCard({ displayedPrice: '2.34' })]).split('\n');
-		expect(auto.endsWith(',2.34')).toBe(true);
-	});
-
-	it('leaves the price empty when neither manual nor auto price exists', () => {
-		const [, row] = buildCsv([makeCard({ displayedPrice: null, priceManuallySet: false })]).split(
+	it('uses the manual price override when set', () => {
+		const [, row] = buildCsv([makeCard({ id: 'x', price: 9.5, priceManuallySet: true })]).split(
 			'\n'
 		);
-		expect(row.endsWith(',')).toBe(true);
+		expect(row.endsWith(',9.5,x')).toBe(true);
+	});
+
+	it('resolves the price from the selected source and finish', () => {
+		const usd = buildCsv([makeCard({ prices: { usd: '3.41' } })], 'tcgplayer').split('\n')[1];
+		expect(usd).toContain(',3.41,');
+		const eur = buildCsv([makeCard({ prices: { eur: '2.10' } })], 'cardmarket').split('\n')[1];
+		expect(eur).toContain(',2.10,');
+	});
+
+	it('leaves the price blank when the source/finish price is unavailable', () => {
+		const [, row] = buildCsv([
+			makeCard({ id: 'x', selectedFinish: 'etched', prices: { usd: '1.00' } })
+		]).split('\n');
+		expect(row.endsWith(',,x')).toBe(true); // no usd_etched -> blank price
 	});
 });

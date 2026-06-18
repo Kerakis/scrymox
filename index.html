@@ -2,11 +2,18 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="#7e22ce" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#120f1c" media="(prefers-color-scheme: dark)" />
+		<meta
+			name="description"
+			content="Turn a Scryfall search into an importable Moxfield card list — edit in bulk and export CSV or bulk text."
+		/>
 		<title>ScryMox</title>
 	</head>
-	<body class="bg-pink-700">
+	<body>
 		<div id="app"></div>
 		<script type="module" src="/src/main.js"></script>
 	</body>

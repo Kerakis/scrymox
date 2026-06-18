@@ -47,18 +47,31 @@ describe('normalizeCard', () => {
 		});
 	});
 
+	it('carries identity, set name, language, games, and layout', () => {
+		const card = normalizeCard({
+			...base,
+			oracle_id: 'orc',
+			set_name: 'Limited Edition Alpha',
+			lang: 'en',
+			games: ['paper', 'mtgo']
+		});
+		expect(card.oracle_id).toBe('orc');
+		expect(card.set_name).toBe('Limited Edition Alpha');
+		expect(card.language).toBe('EN');
+		expect(card.games).toEqual(['paper', 'mtgo']);
+		expect(card.layout).toBe('normal');
+	});
+
 	it('derives finish, marker, and price from the default finish', () => {
 		const card = normalizeCard(base);
 		expect(card.selectedFinish).toBe('');
 		expect(card.displayFinish).toBe('');
-		expect(card.displayedPrice).toBe('1.00');
 	});
 
 	it('defaults a foil-only card to foil and its foil price', () => {
 		const card = normalizeCard({ ...base, finishes: ['foil'] });
 		expect(card.selectedFinish).toBe('foil');
 		expect(card.displayFinish).toBe('*F*');
-		expect(card.displayedPrice).toBe('2.00');
 	});
 
 	it('keeps single image_uris for a single-faced card', () => {
@@ -104,6 +117,30 @@ describe('normalizeCard', () => {
 		expect(card.name).toBe('Lightning Bolt');
 		expect(card.image_uris).toEqual({ border_crop: 'front.png' });
 	});
+
+	it('uses the top-level image for adventure cards that still have card_faces', () => {
+		const card = normalizeCard({
+			...base,
+			layout: 'adventure',
+			image_uris: { border_crop: 'combined.png' },
+			card_faces: [{ name: 'Creature' }, { name: 'Adventure' }]
+		});
+		// Faces carry no images for adventure — must fall back to the combined art.
+		expect(card.image_uris).toEqual({ border_crop: 'combined.png' });
+	});
+
+	it('collects both face images for a modal_dfc card', () => {
+		const card = normalizeCard({
+			...base,
+			image_uris: undefined,
+			layout: 'modal_dfc',
+			card_faces: [
+				{ name: 'Front', image_uris: { border_crop: 'f.png' } },
+				{ name: 'Back', image_uris: { border_crop: 'b.png' } }
+			]
+		});
+		expect(card.image_uris).toEqual([{ border_crop: 'f.png' }, { border_crop: 'b.png' }]);
+	});
 });
 
 describe('searchAllPages', () => {
@@ -118,19 +155,23 @@ describe('searchAllPages', () => {
 		prices: { usd: '1.00' }
 	};
 
-	/** Builds a fake fetch whose responses are keyed by URL. */
-	const fakeFetch = (/** @type {Record<string, unknown>} */ responsesByUrl) =>
-		vi.fn(async (/** @type {string} */ url) => ({ json: async () => responsesByUrl[url] }));
-
-	const noSleep = vi.fn(async () => {});
+	/** Builds a fake queue whose responses are keyed by URL. */
+	const fakeEnqueue = (/** @type {Record<string, unknown>} */ responsesByUrl) =>
+		vi.fn(async (/** @type {string} */ url, /** @type {any} */ init) => {
+			void init;
+			return {
+				status: 200,
+				json: async () => responsesByUrl[url]
+			};
+		});
 
 	it('normalizes and reports a single page, returning no error', async () => {
 		const onPage = vi.fn();
-		const fetchImpl = fakeFetch({
+		const enqueue = fakeEnqueue({
 			start: { object: 'list', total_cards: 1, has_more: false, data: [scryfallCard] }
 		});
 
-		const result = await searchAllPages('start', { onPage, fetchImpl, sleep: noSleep });
+		const result = await searchAllPages('start', { onPage, enqueue });
 
 		expect(result).toEqual({});
 		expect(onPage).toHaveBeenCalledTimes(1);
@@ -141,7 +182,7 @@ describe('searchAllPages', () => {
 
 	it('follows next_page across multiple pages', async () => {
 		const onPage = vi.fn();
-		const fetchImpl = fakeFetch({
+		const enqueue = fakeEnqueue({
 			p1: { object: 'list', total_cards: 2, has_more: true, next_page: 'p2', data: [scryfallCard] },
 			p2: {
 				object: 'list',
@@ -151,21 +192,32 @@ describe('searchAllPages', () => {
 			}
 		});
 
-		const result = await searchAllPages('p1', { onPage, fetchImpl, sleep: noSleep });
+		const result = await searchAllPages('p1', { onPage, enqueue });
 
 		expect(result).toEqual({});
-		expect(fetchImpl).toHaveBeenCalledTimes(2);
+		expect(enqueue).toHaveBeenCalledTimes(2);
 		expect(onPage).toHaveBeenCalledTimes(2);
-		expect(noSleep).toHaveBeenCalled();
+	});
+
+	it('sends the Accept header and never a User-Agent', async () => {
+		const enqueue = fakeEnqueue({
+			start: { object: 'list', total_cards: 0, has_more: false, data: [] }
+		});
+
+		await searchAllPages('start', { onPage: () => {}, enqueue });
+
+		const [, init] = enqueue.mock.calls[0];
+		expect(init.headers.Accept).toBe('application/json;q=0.9,*/*;q=0.8');
+		expect(init.headers['User-Agent']).toBeUndefined();
 	});
 
 	it('returns an error string for an error response without reporting cards', async () => {
 		const onPage = vi.fn();
-		const fetchImpl = fakeFetch({
+		const enqueue = fakeEnqueue({
 			start: { object: 'error', details: 'Invalid query.' }
 		});
 
-		const result = await searchAllPages('start', { onPage, fetchImpl, sleep: noSleep });
+		const result = await searchAllPages('start', { onPage, enqueue });
 
 		expect(result.error).toBe('Invalid query.');
 		expect(onPage).not.toHaveBeenCalled();
@@ -173,11 +225,11 @@ describe('searchAllPages', () => {
 
 	it('surfaces warnings as an error string', async () => {
 		const onPage = vi.fn();
-		const fetchImpl = fakeFetch({
+		const enqueue = fakeEnqueue({
 			start: { object: 'list', total_cards: 0, has_more: false, data: [], warnings: ['w1', 'w2'] }
 		});
 
-		const result = await searchAllPages('start', { onPage, fetchImpl, sleep: noSleep });
+		const result = await searchAllPages('start', { onPage, enqueue });
 
 		expect(result.error).toContain('w1 w2');
 		expect(onPage).not.toHaveBeenCalled();
