@@ -56,3 +56,14 @@ export const formatPrice = (value, source) => {
 	const { symbol, suffix } = CURRENCY[source];
 	return `${symbol}${value}${suffix}`;
 };
+
+/**
+ * Currency affixes for a bare numeric input: a leading symbol ($/€) and/or a
+ * trailing label (tix).
+ * @param {PriceSource} source
+ * @returns {{ symbol: string, suffix: string }}
+ */
+export const currencyAffix = (source) => ({
+	symbol: CURRENCY[source].symbol,
+	suffix: CURRENCY[source].suffix.trim()
+});

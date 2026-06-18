@@ -13,14 +13,13 @@
 	import Tooltip from './Tooltip.svelte';
 
 	import { buildSearchUrl, searchAllPages } from './lib/scryfall.js';
-	import { readCache, writeCache, invalidateCache } from './lib/cache.js';
+	import { readCache, writeCache } from './lib/cache.js';
 	import { applyBulk } from './lib/bulk.js';
-	import { toggle, selectRange, selectAll, clear } from './lib/selection.js';
+	import { toggle, selectRange, toggleRange, selectAll, clear } from './lib/selection.js';
 	import { readJSON, writeJSON, readString, writeString } from './lib/storage.js';
 	import { getStoredTheme, setStoredTheme, resolveTheme, applyTheme } from './lib/theme.js';
 
 	const PAGE_SIZE = 60;
-	const REFRESH_COOLDOWN_MS = 10_000;
 
 	// settings
 	let query = $state('');
@@ -44,13 +43,13 @@
 	let selectedIds = $state(new Set());
 	/** @type {import('./types').Card | null} */
 	let previewCard = $state(null);
+	let previewFlipped = $state(false);
 	let page = $state(1);
 	/** @type {string | null} */
 	let anchorId = null;
 	let settingsOpen = $state(false);
 	let exportOpen = $state(false);
 	let lastQuery = '';
-	let lastRefreshAt = 0;
 
 	const ids = $derived(cards.map((c) => c.id));
 	const orderedIds = () => ids;
@@ -74,7 +73,7 @@
 		searchHistory = readJSON('scrymox:history', []);
 		const saved =
 			/** @type {{ cards?: import('./types').Card[], totalCards?: number, query?: string } | null} */ (
-				readJSON('scrymox:working', null)
+				readJSON('scrymox:working:v2', null)
 			);
 		if (saved) {
 			cards = saved.cards ?? [];
@@ -99,7 +98,7 @@
 		writeString('scrymox:view', view);
 	});
 	$effect(() => {
-		writeJSON('scrymox:working', { query: lastQuery, cards, totalCards });
+		writeJSON('scrymox:working:v2', { query: lastQuery, cards, totalCards });
 	});
 
 	const onThemeChange = (/** @type {import('./lib/theme').Theme} */ t) => {
@@ -109,7 +108,7 @@
 	};
 
 	// ---- search ----
-	const runSearch = async (/** @type {string} */ q, { refresh = false } = {}) => {
+	const runSearch = async (/** @type {string} */ q) => {
 		const trimmed = q.trim();
 		if (!trimmed) {
 			searchError = 'Please enter a query.';
@@ -122,8 +121,7 @@
 		page = 1;
 		lastQuery = trimmed;
 
-		if (refresh) invalidateCache(`${trimmed} ${defaultQueryOptions}`);
-		const cached = !refresh && readCache(`${trimmed} ${defaultQueryOptions}`);
+		const cached = readCache(`${trimmed} ${defaultQueryOptions}`);
 		if (cached) {
 			cards = cached.cards;
 			totalCards = cached.totalCards;
@@ -157,19 +155,6 @@
 		}
 		writeCache(`${trimmed} ${defaultQueryOptions}`, cards, totalCards);
 		recordHistory(trimmed);
-	};
-
-	// Manual refresh: in-flight lock + a short cooldown so the button can't be
-	// hammered (the shared queue also spaces requests and backs off on 429).
-	const onRefresh = () => {
-		if (isLoading || !lastQuery) return;
-		const now = Date.now();
-		if (now - lastRefreshAt < REFRESH_COOLDOWN_MS) {
-			bulkNote = 'Refreshing is rate-limited — please wait a few seconds.';
-			return;
-		}
-		lastRefreshAt = now;
-		runSearch(lastQuery, { refresh: true });
 	};
 
 	const recordHistory = (/** @type {string} */ q) => {
@@ -215,17 +200,24 @@
 	};
 
 	// ---- selection ----
-	// Shift+click selects the contiguous range from the anchor (replacing the
-	// prior range, like Windows Explorer); Ctrl/⌘+click toggles individuals.
+	// Shift+click toggles the inclusive range from the anchor (a repeat on the
+	// same target deselects it); Ctrl/⌘+click toggles individuals.
 	const onSelect = (/** @type {MouseEvent} */ e, /** @type {string} */ id) => {
 		if (e.shiftKey && anchorId) {
-			selectedIds = selectRange(new Set(), orderedIds(), anchorId, id);
+			selectedIds = toggleRange(selectedIds, orderedIds(), anchorId, id);
 		} else {
 			selectedIds = toggle(selectedIds, id);
 			anchorId = id;
 		}
 	};
-	const onHover = (/** @type {import('./types').Card} */ c) => (previewCard = c);
+	const onHover = (/** @type {import('./types').Card} */ c) => {
+		previewCard = c;
+		previewFlipped = false;
+	};
+	const onFlip = (/** @type {import('./types').Card} */ c, /** @type {boolean} */ flipped) => {
+		previewCard = c;
+		previewFlipped = flipped;
+	};
 
 	const isTyping = (/** @type {EventTarget | null} */ t) =>
 		t instanceof HTMLElement &&
@@ -291,20 +283,9 @@
 		</div>
 	</header>
 
-	{#if searchError}<p role="alert" class="mx-auto max-w-[1800px] px-4 pt-3 text-red-500">
-			{searchError}
-		</p>{/if}
-
 	{#if cards.length > 0}
 		<main class="mx-auto max-w-[1800px] p-3">
-			<ResultsToolbar
-				{totalCards}
-				selectedCount={selectedIds.size}
-				bind:source
-				bind:view
-				refreshDisabled={isLoading}
-				onrefresh={onRefresh}
-			/>
+			<ResultsToolbar {totalCards} selectedCount={selectedIds.size} bind:source bind:view />
 			{#if bulkNote}<p class="px-1 py-1 text-sm text-amber-500">{bulkNote}</p>{/if}
 
 			<div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_480px] 2xl:grid-cols-[1fr_580px]">
@@ -318,6 +299,7 @@
 							onremove={removeCard}
 							onselect={onSelect}
 							onhover={onHover}
+							onflip={onFlip}
 						/>
 					{:else}
 						<CompactTable
@@ -337,14 +319,14 @@
 								type="button"
 								onclick={() => (page = Math.max(1, page - 1))}
 								disabled={page === 1}
-								class="rounded bg-accent/20 px-3 py-1 disabled:opacity-50">‹ Prev</button
+								class="rounded-md bg-accent/20 px-3 py-1 disabled:opacity-50">Prev</button
 							>
 							<span class="text-muted">Page {page} of {totalPages}</span>
 							<button
 								type="button"
 								onclick={() => (page = Math.min(totalPages, page + 1))}
 								disabled={page === totalPages}
-								class="rounded bg-accent/20 px-3 py-1 disabled:opacity-50">Next ›</button
+								class="rounded-md bg-accent/20 px-3 py-1 disabled:opacity-50">Next</button
 							>
 						</div>
 					{/if}
@@ -354,7 +336,11 @@
 				<aside class="hidden lg:block">
 					<div class="sticky top-3 space-y-3">
 						<ExportPanel {cards} {source} />
-						<CardPreview card={previewCard} />
+						<CardPreview
+							card={previewCard}
+							flipped={previewFlipped}
+							onflip={() => (previewFlipped = !previewFlipped)}
+						/>
 					</div>
 				</aside>
 			</div>
@@ -363,7 +349,7 @@
 				type="button"
 				onclick={() => (exportOpen = true)}
 				class="mt-3 w-full rounded-md bg-accent px-4 py-2 text-accent-contrast lg:hidden"
-				>⬆ Export</button
+				>Export</button
 			>
 
 			{#if selectedIds.size > 0}
@@ -378,9 +364,9 @@
 			{/if}
 		</main>
 	{:else if isLoading}
-		<p class="mx-auto max-w-[1800px] p-6 text-center text-muted">
-			Loading {cards.length}{totalCards ? ` of ${totalCards}` : ''} cards…
-		</p>
+		<p class="mx-auto max-w-[1800px] p-6 text-center text-muted">Loading cards…</p>
+	{:else if searchError}
+		<p role="alert" class="mx-auto max-w-[1800px] p-6 text-center text-red-500">{searchError}</p>
 	{:else}
 		<p class="mx-auto max-w-[1800px] p-6 text-center text-muted">
 			Enter a Scryfall query to begin.

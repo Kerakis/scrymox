@@ -26,6 +26,7 @@ test('inlineImage and zoomImage prefer the right sizes', () => {
 	expect(inlineImage({ border_crop: 'bc', normal: 'n' })).toBe('bc');
 	expect(inlineImage({ normal: 'n' })).toBe('n');
 	expect(inlineImage(undefined)).toBe('');
-	expect(zoomImage({ large: 'l', png: 'p', border_crop: 'bc' })).toBe('l');
+	expect(zoomImage({ large: 'l', png: 'p', border_crop: 'bc' })).toBe('p');
+	expect(zoomImage({ large: 'l', border_crop: 'bc' })).toBe('l');
 	expect(zoomImage({ border_crop: 'bc' })).toBe('bc');
 });

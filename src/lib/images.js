@@ -25,5 +25,9 @@ export const isDoubleFaced = (card) => {
 /** Small inline image (tiles/preview). @param {FaceUris | undefined} face */
 export const inlineImage = (face) => face?.border_crop ?? face?.normal ?? '';
 
-/** Large image for zoom/preview. @param {FaceUris | undefined} face */
-export const zoomImage = (face) => face?.large ?? face?.png ?? face?.normal ?? inlineImage(face);
+/**
+ * Large image for zoom/preview. Prefer `png`: it has transparent, consistently
+ * rounded corners across all cards (the `large` JPEG's corner treatment varies).
+ * @param {FaceUris | undefined} face
+ */
+export const zoomImage = (face) => face?.png ?? face?.large ?? face?.normal ?? inlineImage(face);

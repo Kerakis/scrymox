@@ -1,39 +1,37 @@
 <script>
+	import FlipIcon from './FlipIcon.svelte';
 	import { getFaces, isDoubleFaced, zoomImage } from './lib/images.js';
-	/** @type {{ card?: import('./types').Card | null }} */
-	let { card } = $props();
+	/** @type {{ card?: import('./types').Card | null; flipped?: boolean; onflip?: () => void }} */
+	let { card, flipped = false, onflip } = $props();
 
 	const faces = $derived(card ? getFaces(card) : []);
 	const dfc = $derived(card ? isDoubleFaced(card) : false);
-	let flipped = $state(false);
-	// Reset the flip whenever the previewed card changes.
-	$effect(() => {
-		void card?.id;
-		flipped = false;
-	});
 	const src = $derived(zoomImage(faces[flipped && dfc ? 1 : 0]));
 </script>
 
 <div class="rounded-md bg-surface-2 p-3 text-text ring-1 ring-border">
 	<h3 class="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Preview</h3>
 	{#if card}
-		{#if src}
-			<img {src} alt={card.name} class="mx-auto block max-h-[55vh] rounded-md object-contain" />
-		{:else}
-			<div
-				class="flex aspect-5/7 w-full items-center justify-center rounded-md bg-surface text-sm text-muted"
-			>
-				No image
-			</div>
-		{/if}
-		<div class="mt-2 flex items-center justify-between gap-2">
-			<span class="truncate text-sm">{card.name}</span>
+		<div class="relative">
+			{#if src}
+				<img {src} alt={card.name} class="mx-auto block max-h-[55vh] rounded-md object-contain" />
+			{:else}
+				<div
+					class="flex aspect-5/7 w-full items-center justify-center rounded-md bg-surface text-sm text-muted"
+				>
+					No image
+				</div>
+			{/if}
 			{#if dfc}
 				<button
 					type="button"
-					onclick={() => (flipped = !flipped)}
-					class="shrink-0 rounded-md bg-accent/20 px-2 py-1 text-xs">Flip ⤺</button
+					onclick={onflip}
+					aria-label="Flip card"
+					title="Flip card"
+					class="absolute top-2 right-2 rounded-full bg-black/55 p-1.5 text-white hover:bg-black/75"
 				>
+					<FlipIcon class="h-4 w-4" />
+				</button>
 			{/if}
 		</div>
 	{:else}

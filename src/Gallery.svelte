@@ -9,9 +9,10 @@
 	 *   onremove?: (id: string) => void;
 	 *   onselect?: (event: MouseEvent, id: string) => void;
 	 *   onhover?: (card: import('./types').Card) => void;
+	 *   onflip?: (card: import('./types').Card, flipped: boolean) => void;
 	 * }}
 	 */
-	let { cards, source, selectedIds, onupdate, onremove, onselect, onhover } = $props();
+	let { cards, source, selectedIds, onupdate, onremove, onselect, onhover, onflip } = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
@@ -24,6 +25,7 @@
 			{onremove}
 			{onselect}
 			{onhover}
+			{onflip}
 		/>
 	{/each}
 </div>

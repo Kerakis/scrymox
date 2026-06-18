@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { priceKey, getPrice, formatPrice, PRICE_SOURCES } from './prices.js';
+import { priceKey, getPrice, formatPrice, currencyAffix, PRICE_SOURCES } from './prices.js';
 
 test('priceKey maps source + finish to the Scryfall key', () => {
 	expect(priceKey('tcgplayer', '')).toBe('usd');
@@ -28,4 +28,10 @@ test('formatPrice adds the source currency symbol', () => {
 	expect(formatPrice('0.02', 'cardhoarder')).toBe('0.02 tix');
 	expect(formatPrice(null, 'tcgplayer')).toBeNull();
 	expect(formatPrice('', 'tcgplayer')).toBeNull();
+});
+
+test('currencyAffix gives the input symbol/suffix', () => {
+	expect(currencyAffix('tcgplayer')).toEqual({ symbol: '$', suffix: '' });
+	expect(currencyAffix('cardmarket')).toEqual({ symbol: '€', suffix: '' });
+	expect(currencyAffix('cardhoarder')).toEqual({ symbol: '', suffix: 'tix' });
 });

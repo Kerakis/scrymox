@@ -6,7 +6,8 @@
 import { readJSON, writeJSON, removeKey } from './storage.js';
 
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const KEY_PREFIX = 'scrymox:cache:';
+// v2: card normalization shape changed (DFC images); drop pre-fix cached cards.
+const KEY_PREFIX = 'scrymox:cache:v2:';
 
 /** @param {string} query */
 export const normalizeQueryKey = (query) => query.trim().replace(/\s+/g, ' ').toLowerCase();

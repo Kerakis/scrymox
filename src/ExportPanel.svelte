@@ -31,14 +31,14 @@
 		<button
 			type="button"
 			onclick={() => (tab = 'bulk')}
-			class="rounded-full px-3 py-1 text-sm {tab === 'bulk'
+			class="rounded-md px-3 py-1 text-sm {tab === 'bulk'
 				? 'bg-accent text-accent-contrast'
 				: 'bg-accent/20'}">Bulk Edit</button
 		>
 		<button
 			type="button"
 			onclick={() => (tab = 'csv')}
-			class="rounded-full px-3 py-1 text-sm {tab === 'csv'
+			class="rounded-md px-3 py-1 text-sm {tab === 'csv'
 				? 'bg-accent text-accent-contrast'
 				: 'bg-accent/20'}">CSV</button
 		>
@@ -60,7 +60,7 @@
 			type="button"
 			onclick={download}
 			title={`Download ${filename}`}
-			class="flex-1 rounded-md bg-accent/20 px-3 py-2 text-sm">⬇ Download</button
+			class="flex-1 rounded-md bg-accent/20 px-3 py-2 text-sm">Download</button
 		>
 	</div>
 </div>

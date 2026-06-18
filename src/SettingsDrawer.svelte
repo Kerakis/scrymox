@@ -61,4 +61,13 @@
 		<option value="light">Light</option>
 		<option value="dark">Dark</option>
 	</select>
+
+	<footer class="mt-8 border-t border-border pt-3 text-center text-xs text-muted">
+		<a
+			href="https://github.com/Kerakis"
+			target="_blank"
+			rel="noopener noreferrer"
+			class="hover:text-text hover:underline">Kerakis © {new Date().getFullYear()}</a
+		>
+	</footer>
 </Drawer>
