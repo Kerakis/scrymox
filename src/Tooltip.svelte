@@ -1,10 +1,15 @@
 <script>
 	/**
-	 * @type {{ text: string; children: import('svelte').Snippet }}
+	 * @type {{ text: string; align?: 'center' | 'left' | 'right'; children: import('svelte').Snippet }}
 	 */
-	let { text, children } = $props();
+	let { text, align = 'center', children } = $props();
 	let show = $state(false);
 	const id = `tt-${Math.random().toString(36).slice(2, 9)}`;
+	const pos = {
+		center: 'left-1/2 -translate-x-1/2',
+		left: 'left-0',
+		right: 'right-0'
+	};
 </script>
 
 <span
@@ -21,7 +26,9 @@
 		<span
 			{id}
 			role="tooltip"
-			class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1 -translate-x-1/2 rounded bg-surface-2 px-2 py-1 text-xs whitespace-nowrap text-text shadow-lg ring-1 ring-border"
+			class="pointer-events-none absolute bottom-full z-50 mb-1 max-w-[min(16rem,90vw)] rounded bg-surface-2 px-2 py-1 text-xs whitespace-nowrap text-text shadow-lg ring-1 ring-border {pos[
+				align
+			]}"
 		>
 			{text}
 		</span>

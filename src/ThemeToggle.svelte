@@ -9,7 +9,7 @@
 	};
 </script>
 
-<Tooltip text={`Theme: ${theme} — click to change`}>
+<Tooltip text={`Theme: ${theme} — click to change`} align="right">
 	<button
 		type="button"
 		onclick={cycle}

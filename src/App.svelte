@@ -49,6 +49,7 @@
 	let anchorId = null;
 	let settingsOpen = $state(false);
 	let exportOpen = $state(false);
+	let showBackToTop = $state(false);
 	let lastQuery = '';
 
 	const ids = $derived(cards.map((c) => c.id));
@@ -234,7 +235,7 @@
 	};
 </script>
 
-<svelte:window onkeydown={onKeydown} />
+<svelte:window onkeydown={onKeydown} onscroll={() => (showBackToTop = window.scrollY > 400)} />
 
 <div class="flex min-h-screen flex-col bg-bg text-text">
 	<header class="bg-linear-to-r from-(--bar-from) to-(--bar-to) shadow">
@@ -254,7 +255,7 @@
 					/>
 					<rect x="8" y="4" width="12" height="16" rx="2" transform="rotate(7 14 12)" />
 				</svg>
-				<h1 class="text-xl font-bold">ScryMox</h1>
+				<h1 class="font-brand text-2xl font-bold tracking-tight">ScryMox</h1>
 			</div>
 			<div class="order-last w-full sm:order-0 sm:w-auto sm:flex-1">
 				<SearchBar
@@ -271,7 +272,7 @@
 				/>
 			</div>
 			<div class="ml-auto flex items-center gap-1">
-				<Tooltip text="Scryfall syntax guide">
+				<Tooltip text="Scryfall syntax guide" align="right">
 					<a
 						href="https://scryfall.com/docs/syntax"
 						target="_blank"
@@ -297,7 +298,7 @@
 					</a>
 				</Tooltip>
 				<ThemeToggle bind:theme onchange={onThemeChange} />
-				<Tooltip text="Settings">
+				<Tooltip text="Settings" align="right">
 					<button
 						type="button"
 						aria-label="Settings"
@@ -435,4 +436,18 @@
 		onthemechange={onThemeChange}
 	/>
 	<BottomSheet bind:show={exportOpen} title="Export"><ExportPanel {cards} {source} /></BottomSheet>
+
+	{#if showBackToTop}
+		<button
+			type="button"
+			onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+			aria-label="Back to top"
+			title="Back to top"
+			class="fixed right-4 bottom-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-contrast shadow-lg hover:bg-accent-strong"
+		>
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M6 15l6-6 6 6" />
+			</svg>
+		</button>
+	{/if}
 </div>
