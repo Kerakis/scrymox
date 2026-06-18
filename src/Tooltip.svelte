@@ -15,7 +15,7 @@
 		left: 'left-0',
 		right: 'right-0'
 	};
-	const sideClass = side === 'bottom' ? 'top-full mt-1' : 'bottom-full mb-1';
+	const sideClass = $derived(side === 'bottom' ? 'top-full mt-1' : 'bottom-full mb-1');
 </script>
 
 <span

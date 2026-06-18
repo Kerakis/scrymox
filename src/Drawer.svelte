@@ -32,7 +32,25 @@
 			aria-modal="true"
 			aria-label={title}
 		>
-			{#if title}<h2 class="mb-3 text-lg font-semibold">{title}</h2>{/if}
+			<div class="mb-3 flex items-center justify-between gap-2">
+				{#if title}<h2 class="text-lg font-semibold">{title}</h2>{/if}
+				<button
+					type="button"
+					aria-label="Close"
+					onclick={close}
+					class="ml-auto flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-text"
+				>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						class="h-5 w-5"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+					</svg>
+				</button>
+			</div>
 			{@render children?.()}
 		</div>
 	</div>
