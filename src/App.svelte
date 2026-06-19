@@ -309,7 +309,7 @@
 	</header>
 
 	{#if cards.length > 0}
-		<main class="mx-auto max-w-[1800px] p-3">
+		<main class="mx-auto w-full max-w-[1800px] p-3">
 			<ResultsToolbar
 				{totalCards}
 				selectedCount={selectedIds.size}
@@ -320,7 +320,7 @@
 			{#if bulkNote}<p class="px-1 py-1 text-sm text-amber-500">{bulkNote}</p>{/if}
 
 			<div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_480px] 2xl:grid-cols-[1fr_580px]">
-				<div>
+				<div class="min-w-0">
 					{#if view === 'gallery'}
 						<Gallery
 							cards={pagedCards}

@@ -50,6 +50,7 @@
 		background-color: var(--bg);
 		color: var(--text);
 		color-scheme: light;
+		scrollbar-gutter: stable;
 	}
 	html.dark {
 		color-scheme: dark;
