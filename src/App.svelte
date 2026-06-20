@@ -407,7 +407,7 @@
 
 	<footer class="mt-auto px-4 py-6 text-center text-xs text-muted">
 		<a
-			href="https://github.com/Kerakis"
+			href="https://www.kerakis.com"
 			target="_blank"
 			rel="noopener noreferrer"
 			class="hover:text-text hover:underline">Kerakis © {new Date().getFullYear()}</a
