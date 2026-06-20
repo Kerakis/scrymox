@@ -223,7 +223,7 @@
 <svelte:window onkeydown={onKeydown} onscroll={() => (showBackToTop = window.scrollY > 400)} />
 
 <div class="flex min-h-screen flex-col bg-bg text-text {selectedIds.size > 0 ? 'pb-24' : ''}">
-	<header class="bg-linear-to-r from-(--bar-from) to-(--bar-to) shadow">
+	<header class="bg-linear-to-r from-(--bar-to) to-(--bar-from) shadow">
 		<div
 			class="mx-auto flex max-w-[1800px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-white"
 		>
@@ -388,9 +388,21 @@
 	{:else if searchError}
 		<p role="alert" class="mx-auto max-w-[1800px] p-6 text-center text-red-500">{searchError}</p>
 	{:else}
-		<p class="mx-auto max-w-[1800px] p-6 text-center text-muted">
-			Enter a Scryfall query to begin.
-		</p>
+		<div class="flex min-h-[40vh] flex-col items-center justify-center px-6 pt-4 text-center">
+			<h1
+				class="max-w-4xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl"
+			>
+				<span class="bg-linear-to-r from-(--bar-from) to-(--bar-to) bg-clip-text text-transparent">
+					Build Moxfield imports from any Scryfall query
+				</span>
+			</h1>
+
+			<p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
+				Search, refine, and export card lists in seconds using powerful Scryfall queries.
+			</p>
+
+			<p class="mt-8 text-sm font-medium text-muted">Enter a Scryfall query above to get started</p>
+		</div>
 	{/if}
 
 	<footer class="mt-auto px-4 py-6 text-center text-xs text-muted">
