@@ -309,7 +309,7 @@
 	</header>
 
 	{#if cards.length > 0}
-		<main class="mx-auto w-full max-w-[1800px] p-3">
+		<main transition:fade={{ duration: 200 }} class="mx-auto w-full max-w-[1800px] p-3">
 			<ResultsToolbar
 				{totalCards}
 				selectedCount={selectedIds.size}
@@ -321,28 +321,32 @@
 
 			<div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_480px] 2xl:grid-cols-[1fr_580px]">
 				<div class="min-w-0">
-					{#if view === 'gallery'}
-						<Gallery
-							cards={pagedCards}
-							{source}
-							{selectedIds}
-							onupdate={updateCard}
-							onremove={removeCard}
-							onselect={onSelect}
-							onhover={onHover}
-							onflip={onFlip}
-						/>
-					{:else}
-						<CompactTable
-							cards={pagedCards}
-							{source}
-							{selectedIds}
-							onupdate={updateCard}
-							onremove={removeCard}
-							onselect={onSelect}
-							onhover={onHover}
-						/>
-					{/if}
+					{#key view}
+						<div in:fade={{ duration: 150 }}>
+							{#if view === 'gallery'}
+								<Gallery
+									cards={pagedCards}
+									{source}
+									{selectedIds}
+									onupdate={updateCard}
+									onremove={removeCard}
+									onselect={onSelect}
+									onhover={onHover}
+									onflip={onFlip}
+								/>
+							{:else}
+								<CompactTable
+									cards={pagedCards}
+									{source}
+									{selectedIds}
+									onupdate={updateCard}
+									onremove={removeCard}
+									onselect={onSelect}
+									onhover={onHover}
+								/>
+							{/if}
+						</div>
+					{/key}
 
 					{#if totalPages > 1}
 						<div class="mt-3 flex items-center justify-center gap-3 text-sm">

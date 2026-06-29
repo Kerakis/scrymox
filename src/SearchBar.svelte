@@ -49,7 +49,12 @@
 				onclick={() => (showHistory = !showHistory)}
 				aria-label="Toggle search history"
 				class="absolute inset-y-0 right-0 px-3 text-muted hover:text-text"
-				>{showHistory ? '▲' : '▼'}</button
+				><span
+					class="inline-block transition-transform duration-200 {showHistory
+						? 'rotate-180'
+						: ''}"
+					aria-hidden="true">▼</span
+				></button
 			>
 
 			{#if showHistory && history.length > 0}
