@@ -28,7 +28,7 @@
 		"tailwindcss": "^4.3.2",
 		"typescript": "npm:@typescript/typescript6@^6.0.2",
 		"typescript7": "npm:typescript@^7.0.2",
-		"vite": "^8.1.4",
+		"vite": "^8.1.5",
 		"vitest": "^4.1.10"
 	},
 	"dependencies": {
