@@ -24,7 +24,7 @@
 		"postcss": "^8.5.19",
 		"prettier": "^3.9.5",
 		"prettier-plugin-svelte": "^4.1.1",
-		"svelte-check": "^4.7.2",
+		"svelte-check": "^4.7.3",
 		"tailwindcss": "^4.3.2",
 		"typescript": "npm:@typescript/typescript6@^6.0.2",
 		"typescript7": "npm:typescript@^7.0.2",
@@ -34,6 +34,6 @@
 	"dependencies": {
 		"@fontsource/space-grotesk": "^5.2.10",
 		"prettier-plugin-tailwindcss": "^0.8.0",
-		"svelte": "^5.56.5"
+		"svelte": "^5.56.7"
 	}
 }
