@@ -32,7 +32,7 @@
 </script>
 
 <tr
-	class="border-b border-border {selected ? 'bg-accent/10' : ''}"
+	class="border-border border-b {selected ? 'bg-accent/10' : ''}"
 	onmouseenter={() => onhover?.(card)}
 >
 	<td class="px-2 py-1">
@@ -42,7 +42,7 @@
 			aria-checked={selected}
 			aria-label={`Select ${card.name}`}
 			onclick={(e) => onselect?.(e, card.id)}
-			class="h-4 w-4 rounded border-2 border-accent {selected ? 'bg-accent' : ''}"
+			class="border-accent h-4 w-4 rounded border-2 {selected ? 'bg-accent' : ''}"
 		></button>
 	</td>
 	<td class="px-2 py-1">
@@ -53,11 +53,11 @@
 			value={card.count}
 			onchange={(e) => patch({ count: Math.min(99, Math.max(1, parseInt(e.currentTarget.value))) })}
 			aria-label="Quantity"
-			class="w-14 rounded-md bg-surface-2 px-1 text-text ring-1 ring-border"
+			class="bg-surface-2 text-text ring-border w-14 rounded-md px-1 ring-1"
 		/>
 	</td>
 	<td class="max-w-[16rem] truncate px-2 py-1">{card.name}</td>
-	<td class="px-2 py-1 whitespace-nowrap text-muted"
+	<td class="text-muted px-2 py-1 whitespace-nowrap"
 		>{card.set.toUpperCase()} · CN {card.collector_number}</td
 	>
 	<td class="px-2 py-1">
@@ -70,7 +70,7 @@
 				})}
 			disabled={finishOptions.length <= 1}
 			aria-label="Finish"
-			class="w-full rounded-md bg-accent/20 px-1 text-text disabled:opacity-70"
+			class="bg-accent/20 text-text w-full rounded-md px-1 disabled:opacity-70"
 		>
 			{#each finishOptions as f (f)}<option value={f}>{FINISH_LABELS[f]}</option>{/each}
 		</select>
@@ -80,7 +80,7 @@
 			value={card.condition}
 			onchange={(e) => patch({ condition: e.currentTarget.value })}
 			aria-label="Condition"
-			class="w-full rounded-md bg-accent/20 px-1 text-text"
+			class="bg-accent/20 text-text w-full rounded-md px-1"
 		>
 			{#each Object.entries(CONDITIONS) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 		</select>
@@ -90,7 +90,7 @@
 			value={card.language}
 			onchange={(e) => patch({ language: e.currentTarget.value })}
 			aria-label="Language"
-			class="w-full rounded-md bg-accent/20 px-1 text-text"
+			class="bg-accent/20 text-text w-full rounded-md px-1"
 		>
 			{#each Object.entries(LANGUAGES) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 		</select>
@@ -113,9 +113,9 @@
 	>
 	<td class="px-2 py-1">
 		<div
-			class="flex w-24 items-center gap-1 rounded-md bg-surface-2 px-1 text-text ring-1 ring-border"
+			class="bg-surface-2 text-text ring-border flex w-24 items-center gap-1 rounded-md px-1 ring-1"
 		>
-			{#if affix.symbol}<span class="text-xs text-muted">{affix.symbol}</span>{/if}
+			{#if affix.symbol}<span class="text-muted text-xs">{affix.symbol}</span>{/if}
 			<input
 				type="number"
 				inputmode="decimal"
@@ -127,7 +127,7 @@
 				aria-label="Purchase price override"
 				class="w-full bg-transparent outline-none"
 			/>
-			{#if affix.suffix}<span class="text-xs text-muted">{affix.suffix}</span>{/if}
+			{#if affix.suffix}<span class="text-muted text-xs">{affix.suffix}</span>{/if}
 		</div>
 	</td>
 	<td class="px-2 py-1"
@@ -135,7 +135,7 @@
 			type="button"
 			aria-label={`Remove ${card.name}`}
 			onclick={() => onremove?.(card.id)}
-			class="px-1 text-muted hover:text-red-400">✕</button
+			class="text-muted px-1 hover:text-red-400">✕</button
 		></td
 	>
 </tr>

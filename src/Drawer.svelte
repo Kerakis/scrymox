@@ -27,7 +27,7 @@
 		onkeydown={(e) => e.key === 'Escape' && close()}
 	>
 		<div
-			class="absolute top-0 right-0 flex h-full w-[min(92vw,420px)] flex-col overflow-auto bg-surface p-4 text-text shadow-xl"
+			class="bg-surface text-text absolute top-0 right-0 flex h-full w-[min(92vw,420px)] flex-col overflow-auto p-4 shadow-xl"
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
@@ -38,7 +38,7 @@
 					type="button"
 					aria-label="Close"
 					onclick={close}
-					class="ml-auto flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-text"
+					class="text-muted hover:bg-surface-2 hover:text-text ml-auto flex h-8 w-8 items-center justify-center rounded-md"
 				>
 					<svg
 						viewBox="0 0 24 24"

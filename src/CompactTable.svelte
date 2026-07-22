@@ -27,8 +27,8 @@
 	];
 </script>
 
-<div class="overflow-auto rounded-md border border-border">
-	<table class="w-full text-left text-sm text-text">
+<div class="border-border overflow-auto rounded-md border">
+	<table class="text-text w-full text-left text-sm">
 		<thead class="bg-accent/15">
 			<tr
 				>{#each headers as h, i (i)}<th class="px-2 py-1 font-semibold">{h}</th>{/each}</tr

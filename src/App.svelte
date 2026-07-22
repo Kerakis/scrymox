@@ -222,7 +222,7 @@
 
 <svelte:window onkeydown={onKeydown} onscroll={() => (showBackToTop = window.scrollY > 400)} />
 
-<div class="flex min-h-screen flex-col bg-bg text-text {selectedIds.size > 0 ? 'pb-24' : ''}">
+<div class="bg-bg text-text flex min-h-screen flex-col {selectedIds.size > 0 ? 'pb-24' : ''}">
 	<header class="bg-linear-to-r from-(--bar-to) to-(--bar-from) shadow">
 		<div
 			class="mx-auto flex max-w-[1800px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 text-white"
@@ -354,14 +354,14 @@
 								type="button"
 								onclick={() => (page = Math.max(1, page - 1))}
 								disabled={page === 1}
-								class="rounded-md bg-accent/20 px-3 py-1 disabled:opacity-50">Prev</button
+								class="bg-accent/20 rounded-md px-3 py-1 disabled:opacity-50">Prev</button
 							>
 							<span class="text-muted">Page {page} of {totalPages}</span>
 							<button
 								type="button"
 								onclick={() => (page = Math.min(totalPages, page + 1))}
 								disabled={page === totalPages}
-								class="rounded-md bg-accent/20 px-3 py-1 disabled:opacity-50">Next</button
+								class="bg-accent/20 rounded-md px-3 py-1 disabled:opacity-50">Next</button
 							>
 						</div>
 					{/if}
@@ -383,12 +383,12 @@
 			<button
 				type="button"
 				onclick={() => (exportOpen = true)}
-				class="mt-3 w-full rounded-md bg-accent px-4 py-2 text-accent-contrast lg:hidden"
+				class="bg-accent text-accent-contrast mt-3 w-full rounded-md px-4 py-2 lg:hidden"
 				>Export</button
 			>
 		</main>
 	{:else if isLoading}
-		<p class="mx-auto max-w-[1800px] p-6 text-center text-muted">Loading cards…</p>
+		<p class="text-muted mx-auto max-w-[1800px] p-6 text-center">Loading cards…</p>
 	{:else if searchError}
 		<p role="alert" class="mx-auto max-w-[1800px] p-6 text-center text-red-500">{searchError}</p>
 	{:else}
@@ -401,15 +401,15 @@
 				</span>
 			</h1>
 
-			<p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
+			<p class="text-muted mt-6 max-w-2xl text-lg leading-relaxed">
 				Search, refine, and export card lists in seconds using powerful Scryfall queries.
 			</p>
 
-			<p class="mt-8 text-sm font-medium text-muted">Enter a Scryfall query above to get started</p>
+			<p class="text-muted mt-8 text-sm font-medium">Enter a Scryfall query above to get started</p>
 		</div>
 	{/if}
 
-	<footer class="mt-auto px-4 py-6 text-center text-xs text-muted">
+	<footer class="text-muted mt-auto px-4 py-6 text-center text-xs">
 		<a
 			href="https://www.kerakis.com"
 			target="_blank"
@@ -438,7 +438,7 @@
 					aria-label="Back to top"
 					title="Back to top"
 					transition:fade={{ duration: 200 }}
-					class="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-md bg-surface text-text shadow-lg ring-1 ring-border hover:bg-surface-2"
+					class="bg-surface text-text ring-border hover:bg-surface-2 pointer-events-auto flex h-10 w-10 items-center justify-center rounded-md shadow-lg ring-1"
 				>
 					<svg
 						viewBox="0 0 24 24"

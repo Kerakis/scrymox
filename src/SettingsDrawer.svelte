@@ -59,7 +59,7 @@
 			</span>
 		{/if}
 	</div>
-	<p class="mb-2 text-sm text-muted">
+	<p class="text-muted mb-2 text-sm">
 		Appended to every search and saved automatically.
 		<a
 			href="https://scryfall.com/docs/syntax"
@@ -73,14 +73,14 @@
 		type="text"
 		bind:value={defaultQueryOptions}
 		placeholder="e.g. not:digital"
-		class="mb-5 w-full rounded-md bg-surface-2 px-3 py-2 text-text ring-1 ring-border"
+		class="bg-surface-2 text-text ring-border mb-5 w-full rounded-md px-3 py-2 ring-1"
 	/>
 
 	<label class="mb-1 block text-sm font-medium" for="price-source">Price source</label>
 	<select
 		id="price-source"
 		bind:value={source}
-		class="mb-5 w-full rounded-md bg-surface-2 px-3 py-2 text-text ring-1 ring-border"
+		class="bg-surface-2 text-text ring-border mb-5 w-full rounded-md px-3 py-2 ring-1"
 	>
 		{#each Object.entries(PRICE_SOURCES) as [k, v] (k)}<option value={k}
 				>{v.label} ({v.currency})</option
@@ -93,7 +93,7 @@
 		value={theme}
 		onchange={(e) =>
 			onthemechange?.(/** @type {import('./lib/theme').Theme} */ (e.currentTarget.value))}
-		class="w-full rounded-md bg-surface-2 px-3 py-2 text-text ring-1 ring-border"
+		class="bg-surface-2 text-text ring-border w-full rounded-md px-3 py-2 ring-1"
 	>
 		<option value="system">System (match device)</option>
 		<option value="light">Light</option>

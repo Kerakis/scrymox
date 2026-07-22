@@ -41,8 +41,8 @@
 </script>
 
 <div
-	class="flex flex-row gap-2 rounded-lg border border-border bg-surface p-2 sm:flex-col sm:p-0 {selected
-		? 'ring-2 ring-accent'
+	class="border-border bg-surface flex flex-row gap-2 rounded-lg border p-2 sm:flex-col sm:p-0 {selected
+		? 'ring-accent ring-2'
 		: ''}"
 >
 	<!-- select / remove strip: above image on tile, inline on phone row -->
@@ -55,14 +55,14 @@
 			aria-checked={selected}
 			aria-label={`Select ${card.name}`}
 			onclick={(e) => onselect?.(e, card.id)}
-			class="h-4 w-4 rounded border-2 border-accent {selected ? 'bg-accent' : 'bg-transparent'}"
+			class="border-accent h-4 w-4 rounded border-2 {selected ? 'bg-accent' : 'bg-transparent'}"
 		></button>
 		<Tooltip text="Remove">
 			<button
 				type="button"
 				aria-label={`Remove ${card.name}`}
 				onclick={() => onremove?.(card.id)}
-				class="px-1 text-muted hover:text-red-400">✕</button
+				class="text-muted px-1 hover:text-red-400">✕</button
 			>
 		</Tooltip>
 	</div>
@@ -79,7 +79,7 @@
 	<!-- footer controls: qty+price · finish · condition|language · alter|proxy -->
 	<div class="order-3 flex flex-1 flex-col gap-1.5 sm:order-0 sm:p-2">
 		<div class="flex items-center justify-between gap-2">
-			<span class="inline-flex overflow-hidden rounded-md border border-accent text-sm">
+			<span class="border-accent inline-flex overflow-hidden rounded-md border text-sm">
 				<button
 					type="button"
 					aria-label="Decrease quantity"
@@ -93,7 +93,7 @@
 					value={card.count}
 					onchange={(e) => setQty(parseInt(e.currentTarget.value))}
 					aria-label="Quantity"
-					class="w-10 bg-transparent text-center text-text"
+					class="text-text w-10 bg-transparent text-center"
 				/>
 				<button
 					type="button"
@@ -112,7 +112,7 @@
 			onchange={(e) => setFinish(e.currentTarget.value)}
 			disabled={finishOptions.length <= 1}
 			aria-label="Finish"
-			class="w-full rounded-md bg-accent/20 px-2 py-1 text-center text-sm text-text disabled:opacity-70"
+			class="bg-accent/20 text-text w-full rounded-md px-2 py-1 text-center text-sm disabled:opacity-70"
 		>
 			{#each finishOptions as f (f)}<option value={f}>{FINISH_LABELS[f]}</option>{/each}
 		</select>
@@ -122,7 +122,7 @@
 				value={card.condition}
 				onchange={(e) => patch({ condition: e.currentTarget.value })}
 				aria-label="Condition"
-				class="rounded-md bg-accent/20 px-2 py-1 text-sm text-text"
+				class="bg-accent/20 text-text rounded-md px-2 py-1 text-sm"
 			>
 				{#each Object.entries(CONDITIONS) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 			</select>
@@ -130,7 +130,7 @@
 				value={card.language}
 				onchange={(e) => patch({ language: e.currentTarget.value })}
 				aria-label="Language"
-				class="rounded-md bg-accent/20 px-2 py-1 text-sm text-text"
+				class="bg-accent/20 text-text rounded-md px-2 py-1 text-sm"
 			>
 				{#each Object.entries(LANGUAGES) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 			</select>
@@ -141,7 +141,7 @@
 				type="button"
 				aria-pressed={card.alter}
 				onclick={() => patch({ alter: !card.alter })}
-				class="rounded-md border border-accent px-2 py-1 text-sm {card.alter
+				class="border-accent rounded-md border px-2 py-1 text-sm {card.alter
 					? 'bg-accent text-accent-contrast'
 					: 'text-muted'}">Alter</button
 			>
@@ -149,14 +149,14 @@
 				type="button"
 				aria-pressed={card.proxy}
 				onclick={() => patch({ proxy: !card.proxy })}
-				class="rounded-md border border-accent px-2 py-1 text-sm {card.proxy
+				class="border-accent rounded-md border px-2 py-1 text-sm {card.proxy
 					? 'bg-accent text-accent-contrast'
 					: 'text-muted'}">Proxy</button
 			>
 		</div>
 
 		<div
-			class="flex items-center gap-1 rounded-md bg-surface-2 px-2 py-1 text-sm text-text ring-1 ring-border"
+			class="bg-surface-2 text-text ring-border flex items-center gap-1 rounded-md px-2 py-1 text-sm ring-1"
 		>
 			{#if affix.symbol}<span class="text-muted">{affix.symbol}</span>{/if}
 			<input
@@ -168,9 +168,9 @@
 				placeholder={autoPrice ?? 'price'}
 				onchange={(e) => setPrice(e.currentTarget.value)}
 				aria-label="Purchase price override"
-				class="w-full bg-transparent text-text outline-none"
+				class="text-text w-full bg-transparent outline-none"
 			/>
-			{#if affix.suffix}<span class="text-xs text-muted">{affix.suffix}</span>{/if}
+			{#if affix.suffix}<span class="text-muted text-xs">{affix.suffix}</span>{/if}
 		</div>
 	</div>
 </div>

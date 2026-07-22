@@ -42,13 +42,13 @@
 				bind:value={query}
 				placeholder="Scryfall search query"
 				aria-label="Scryfall search query"
-				class="w-full rounded-md bg-surface px-3 py-2 pr-9 text-text ring-1 ring-border focus:ring-2 focus:ring-accent focus:outline-none"
+				class="bg-surface text-text ring-border focus:ring-accent w-full rounded-md px-3 py-2 pr-9 ring-1 focus:ring-2 focus:outline-none"
 			/>
 			<button
 				type="button"
 				onclick={() => (showHistory = !showHistory)}
 				aria-label="Toggle search history"
-				class="absolute inset-y-0 right-0 px-3 text-muted hover:text-text"
+				class="text-muted hover:text-text absolute inset-y-0 right-0 px-3"
 				><span
 					class="inline-block transition-transform duration-200 {showHistory ? 'rotate-180' : ''}"
 					aria-hidden="true">▼</span
@@ -57,14 +57,14 @@
 
 			{#if showHistory && history.length > 0}
 				<ul
-					class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-surface-2 text-text shadow-xl ring-1 ring-accent/40"
+					class="bg-surface-2 text-text ring-accent/40 absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md shadow-xl ring-1"
 					role="listbox"
 				>
 					{#each history as item (item)}
 						<li class="flex items-center" role="option" aria-selected="false">
 							<button
 								type="button"
-								class="flex-1 px-3 py-2 text-left hover:bg-accent/15"
+								class="hover:bg-accent/15 flex-1 px-3 py-2 text-left"
 								onclick={() => {
 									onpick?.(item);
 									showHistory = false;
@@ -73,15 +73,15 @@
 							<button
 								type="button"
 								aria-label={`Remove ${item}`}
-								class="px-3 py-2 text-muted hover:text-red-400"
+								class="text-muted px-3 py-2 hover:text-red-400"
 								onclick={() => onremovehistory?.(item)}>✕</button
 							>
 						</li>
 					{/each}
-					<li class="border-t border-border">
+					<li class="border-border border-t">
 						<button
 							type="button"
-							class="w-full px-3 py-2 text-left text-sm text-muted hover:bg-accent/15"
+							class="text-muted hover:bg-accent/15 w-full px-3 py-2 text-left text-sm"
 							onclick={() => {
 								onclearhistory?.();
 								showHistory = false;
@@ -95,7 +95,7 @@
 		<button
 			type="submit"
 			disabled={isLoading}
-			class="shrink-0 rounded-md bg-white/95 px-4 py-2 text-sm font-medium text-accent-strong shadow-sm hover:bg-white disabled:opacity-60"
+			class="text-accent-strong shrink-0 rounded-md bg-white/95 px-4 py-2 text-sm font-medium shadow-sm hover:bg-white disabled:opacity-60"
 		>
 			{isLoading ? 'Searching…' : 'Search'}
 		</button>

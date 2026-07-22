@@ -32,7 +32,7 @@
 		<span
 			{id}
 			role="tooltip"
-			class="pointer-events-none absolute z-50 max-w-[min(16rem,90vw)] rounded bg-surface-2 px-2 py-1 text-xs whitespace-nowrap text-text shadow-lg ring-1 ring-border {sideClass} {pos[
+			class="bg-surface-2 text-text ring-border pointer-events-none absolute z-50 max-w-[min(16rem,90vw)] rounded px-2 py-1 text-xs whitespace-nowrap shadow-lg ring-1 {sideClass} {pos[
 				align
 			]}"
 		>

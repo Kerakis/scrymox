@@ -9,8 +9,8 @@
 	const src = $derived(inlineImage(faces[flipped && dfc ? 1 : 0]));
 </script>
 
-<div class="rounded-md bg-surface-2 p-3 text-text ring-1 ring-border">
-	<h3 class="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Preview</h3>
+<div class="bg-surface-2 text-text ring-border rounded-md p-3 ring-1">
+	<h3 class="text-muted mb-2 text-xs font-semibold tracking-wide uppercase">Preview</h3>
 	{#if card}
 		<div class="relative mx-auto w-fit">
 			{#if src}
@@ -18,7 +18,7 @@
 				<img {src} alt={card.name} class="block max-h-[55vh] rounded-2xl" />
 			{:else}
 				<div
-					class="flex aspect-5/7 w-48 items-center justify-center rounded-2xl bg-surface text-sm text-muted"
+					class="bg-surface text-muted flex aspect-5/7 w-48 items-center justify-center rounded-2xl text-sm"
 				>
 					No image
 				</div>
@@ -36,6 +36,6 @@
 			{/if}
 		</div>
 	{:else}
-		<p class="text-sm text-muted">Hover a card to preview it here.</p>
+		<p class="text-muted text-sm">Hover a card to preview it here.</p>
 	{/if}
 </div>

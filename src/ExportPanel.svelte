@@ -42,7 +42,7 @@
 	};
 </script>
 
-<div class="flex h-full flex-col rounded-md bg-surface-2 p-3 text-text ring-1 ring-border">
+<div class="bg-surface-2 text-text ring-border flex h-full flex-col rounded-md p-3 ring-1">
 	<div class="mb-2 flex items-center gap-2">
 		<button
 			type="button"
@@ -63,21 +63,21 @@
 		readonly
 		value={visibleText}
 		aria-label="Export preview"
-		class="max-h-[50vh] min-h-40 flex-1 resize-y rounded bg-surface p-2 font-mono text-xs text-text ring-1 ring-border transition-opacity duration-50 {dimmed
+		class="bg-surface text-text ring-border max-h-[50vh] min-h-40 flex-1 resize-y rounded p-2 font-mono text-xs ring-1 transition-opacity duration-50 {dimmed
 			? 'opacity-0'
 			: 'opacity-100'}"></textarea>
 	<div class="mt-2 flex gap-2">
 		<button
 			type="button"
 			onclick={copy}
-			class="flex-1 rounded-md bg-accent px-3 py-2 text-sm text-accent-contrast hover:bg-accent-strong"
+			class="bg-accent text-accent-contrast hover:bg-accent-strong flex-1 rounded-md px-3 py-2 text-sm"
 			>{copied ? 'Copied!' : 'Copy'}</button
 		>
 		<button
 			type="button"
 			onclick={download}
 			title={`Download ${filename}`}
-			class="flex-1 rounded-md bg-accent/20 px-3 py-2 text-sm">Download</button
+			class="bg-accent/20 flex-1 rounded-md px-3 py-2 text-sm">Download</button
 		>
 	</div>
 </div>

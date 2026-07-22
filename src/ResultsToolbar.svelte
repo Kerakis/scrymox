@@ -17,9 +17,9 @@
 	} = $props();
 </script>
 
-<div class="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2 text-sm text-text">
+<div class="border-border text-text flex flex-wrap items-center gap-3 border-b px-3 py-2 text-sm">
 	<span class="flex items-center gap-1.5">
-		<span class="rounded-md bg-accent/20 px-3 py-1"
+		<span class="bg-accent/20 rounded-md px-3 py-1"
 			>{totalCards} cards{selectedCount ? ` · ${selectedCount} selected` : ''}</span
 		>
 		{#if defaultQuery.trim()}
@@ -27,7 +27,7 @@
 				<button
 					type="button"
 					aria-label="Default query applied"
-					class="flex text-muted hover:text-text"
+					class="text-muted hover:text-text flex"
 				>
 					<svg
 						viewBox="0 0 24 24"
@@ -46,7 +46,7 @@
 
 	<label class="flex items-center gap-1">
 		<span class="text-muted">Prices:</span>
-		<select bind:value={source} aria-label="Price source" class="rounded-md bg-accent/20 px-2 py-1">
+		<select bind:value={source} aria-label="Price source" class="bg-accent/20 rounded-md px-2 py-1">
 			{#each Object.entries(PRICE_SOURCES) as [k, v] (k)}<option value={k}
 					>{v.label} ({v.currency})</option
 				>{/each}
@@ -54,7 +54,7 @@
 	</label>
 
 	<div
-		class="ml-auto inline-flex overflow-hidden rounded-md ring-1 ring-accent"
+		class="ring-accent ml-auto inline-flex overflow-hidden rounded-md ring-1"
 		role="group"
 		aria-label="View"
 	>
