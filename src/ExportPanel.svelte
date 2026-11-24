@@ -49,15 +49,19 @@
 			onclick={() => switchTab('bulk')}
 			class="rounded-md px-3 py-1 text-sm {tab === 'bulk'
 				? 'bg-accent text-accent-contrast'
-				: 'bg-accent/20'}">Bulk Edit</button
+				: 'bg-accent/20'}"
 		>
+			Bulk Edit
+		</button>
 		<button
 			type="button"
 			onclick={() => switchTab('csv')}
 			class="rounded-md px-3 py-1 text-sm {tab === 'csv'
 				? 'bg-accent text-accent-contrast'
-				: 'bg-accent/20'}">CSV</button
+				: 'bg-accent/20'}"
 		>
+			CSV
+		</button>
 	</div>
 	<textarea
 		readonly
@@ -71,13 +75,16 @@
 			type="button"
 			onclick={copy}
 			class="bg-accent text-accent-contrast hover:bg-accent-strong flex-1 rounded-md px-3 py-2 text-sm"
-			>{copied ? 'Copied!' : 'Copy'}</button
 		>
+			{copied ? 'Copied!' : 'Copy'}
+		</button>
 		<button
 			type="button"
 			onclick={download}
 			title={`Download ${filename}`}
-			class="bg-accent/20 flex-1 rounded-md px-3 py-2 text-sm">Download</button
+			class="bg-accent/20 flex-1 rounded-md px-3 py-2 text-sm"
 		>
+			Download
+		</button>
 	</div>
 </div>

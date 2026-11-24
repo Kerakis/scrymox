@@ -55,8 +55,9 @@
 		type="button"
 		class="bg-accent/20 rounded-md px-2 py-1"
 		onclick={(e) => toggle('scope', e)}
-		>{scope === 'all' ? `All (${totalCount})` : `Selected (${selectedCount})`} ▾</button
 	>
+		{scope === 'all' ? `All (${totalCount})` : `Selected (${selectedCount})`} ▾
+	</button>
 	{#if open === 'scope'}
 		<div
 			class="bg-surface ring-border fixed z-50 flex flex-col rounded-md p-1 shadow-lg ring-1"
@@ -68,24 +69,28 @@
 				onclick={() => {
 					scope = 'selected';
 					open = null;
-				}}>Selected ({selectedCount})</button
+				}}
 			>
+				Selected ({selectedCount})
+			</button>
 			<button
 				type="button"
 				class="hover:bg-accent/20 px-3 py-1 text-left"
 				onclick={() => {
 					scope = 'all';
 					open = null;
-				}}>All ({totalCount})</button
+				}}
 			>
+				All ({totalCount})
+			</button>
 		</div>
 	{/if}
 	<span class="text-muted">→</span>
 
 	<!-- Quantity first -->
-	<button type="button" class="bg-accent/20 rounded-md px-2 py-1" onclick={(e) => toggle('qty', e)}
-		>Quantity ▾</button
-	>
+	<button type="button" class="bg-accent/20 rounded-md px-2 py-1" onclick={(e) => toggle('qty', e)}>
+		Quantity ▾
+	</button>
 	{#if open === 'qty'}
 		<div
 			class="bg-surface ring-border fixed z-50 flex items-center gap-1 rounded-md p-2 shadow-lg ring-1"
@@ -104,16 +109,20 @@
 				type="button"
 				aria-label="Apply quantity"
 				onclick={() => applyQty(qtyInput)}
-				class="bg-accent text-accent-contrast rounded-md px-2 py-1">✓</button
+				class="bg-accent text-accent-contrast rounded-md px-2 py-1"
 			>
+				✓
+			</button>
 		</div>
 	{/if}
 
 	<button
 		type="button"
 		class="bg-accent/20 rounded-md px-2 py-1"
-		onclick={(e) => toggle('finish', e)}>Finish ▾</button
+		onclick={(e) => toggle('finish', e)}
 	>
+		Finish ▾
+	</button>
 	{#if open === 'finish'}
 		<div
 			class="bg-surface ring-border fixed z-50 flex flex-col rounded-md p-1 shadow-lg ring-1"
@@ -123,15 +132,21 @@
 				<button
 					type="button"
 					class="hover:bg-accent/20 px-3 py-1 text-left"
-					onclick={() => apply({ selectedFinish: k })}>{v}</button
+					onclick={() => apply({ selectedFinish: k })}
 				>
+					{v}
+				</button>
 			{/each}
 		</div>
 	{/if}
 
-	<button type="button" class="bg-accent/20 rounded-md px-2 py-1" onclick={(e) => toggle('cond', e)}
-		>Condition ▾</button
+	<button
+		type="button"
+		class="bg-accent/20 rounded-md px-2 py-1"
+		onclick={(e) => toggle('cond', e)}
 	>
+		Condition ▾
+	</button>
 	{#if open === 'cond'}
 		<div
 			class="bg-surface ring-border fixed z-50 flex max-h-60 flex-col overflow-auto rounded-md p-1 shadow-lg ring-1"
@@ -140,14 +155,20 @@
 			{#each Object.entries(CONDITIONS) as [k, v] (k)}<button
 					type="button"
 					class="hover:bg-accent/20 px-3 py-1 text-left"
-					onclick={() => apply({ condition: k })}>{v}</button
-				>{/each}
+					onclick={() => apply({ condition: k })}
+				>
+					{v}
+				</button>{/each}
 		</div>
 	{/if}
 
-	<button type="button" class="bg-accent/20 rounded-md px-2 py-1" onclick={(e) => toggle('lang', e)}
-		>Language ▾</button
+	<button
+		type="button"
+		class="bg-accent/20 rounded-md px-2 py-1"
+		onclick={(e) => toggle('lang', e)}
 	>
+		Language ▾
+	</button>
 	{#if open === 'lang'}
 		<div
 			class="bg-surface ring-border fixed z-50 flex max-h-60 flex-col overflow-auto rounded-md p-1 shadow-lg ring-1"
@@ -156,16 +177,20 @@
 			{#each Object.entries(LANGUAGES) as [k, v] (k)}<button
 					type="button"
 					class="hover:bg-accent/20 px-3 py-1 text-left"
-					onclick={() => apply({ language: k })}>{v}</button
-				>{/each}
+					onclick={() => apply({ language: k })}
+				>
+					{v}
+				</button>{/each}
 		</div>
 	{/if}
 
 	<button
 		type="button"
 		class="bg-accent/20 rounded-md px-2 py-1"
-		onclick={(e) => toggle('price', e)}>Price ▾</button
+		onclick={(e) => toggle('price', e)}
 	>
+		Price ▾
+	</button>
 	{#if open === 'price'}
 		<div
 			class="bg-surface ring-border fixed z-50 flex flex-col gap-1 rounded-md p-2 shadow-lg ring-1"
@@ -174,8 +199,10 @@
 			<button
 				type="button"
 				class="hover:bg-accent/20 rounded-md px-3 py-1 text-left"
-				onclick={() => apply({ price: undefined, priceManuallySet: false })}>Reset to auto</button
+				onclick={() => apply({ price: undefined, priceManuallySet: false })}
 			>
+				Reset to auto
+			</button>
 			<div class="flex items-center gap-1">
 				<input
 					type="number"
@@ -190,8 +217,10 @@
 					type="button"
 					aria-label="Apply price"
 					onclick={() => applyPrice(priceInput)}
-					class="bg-accent text-accent-contrast rounded-md px-2 py-1">✓</button
+					class="bg-accent text-accent-contrast rounded-md px-2 py-1"
 				>
+					✓
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -199,20 +228,26 @@
 	<button
 		type="button"
 		class="bg-accent/20 rounded-md px-2 py-1"
-		onclick={() => apply({ alter: true })}>Alter</button
+		onclick={() => apply({ alter: true })}
 	>
+		Alter
+	</button>
 	<button
 		type="button"
 		class="bg-accent/20 rounded-md px-2 py-1"
-		onclick={() => apply({ proxy: true })}>Proxy</button
+		onclick={() => apply({ proxy: true })}
 	>
+		Proxy
+	</button>
 	<button
 		type="button"
 		class="rounded-md bg-red-100 px-2 py-1 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
 		onclick={() => {
 			onremove?.(scope);
 			open = null;
-		}}>Remove</button
+		}}
 	>
+		Remove
+	</button>
 	<span class="text-muted ml-auto pl-2">{count} card{count === 1 ? '' : 's'}</span>
 </div>

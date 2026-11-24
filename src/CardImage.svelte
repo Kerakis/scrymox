@@ -44,8 +44,9 @@
 		{:else}
 			<span
 				class="bg-surface-2 text-muted flex aspect-5/7 w-full items-center justify-center rounded-md px-2 text-center text-xs"
-				>{card.name}</span
 			>
+				{card.name}
+			</span>
 		{/if}
 	</button>
 

@@ -62,8 +62,10 @@
 				type="button"
 				aria-label={`Remove ${card.name}`}
 				onclick={() => onremove?.(card.id)}
-				class="text-muted px-1 hover:text-red-400">✕</button
+				class="text-muted px-1 hover:text-red-400"
 			>
+				✕
+			</button>
 		</Tooltip>
 	</div>
 
@@ -84,8 +86,10 @@
 					type="button"
 					aria-label="Decrease quantity"
 					onclick={() => setQty(card.count - 1)}
-					class="bg-accent/20 px-2">–</button
+					class="bg-accent/20 px-2"
 				>
+					–
+				</button>
 				<input
 					type="number"
 					min="1"
@@ -99,8 +103,10 @@
 					type="button"
 					aria-label="Increase quantity"
 					onclick={() => setQty(card.count + 1)}
-					class="bg-accent/20 px-2">+</button
+					class="bg-accent/20 px-2"
 				>
+					+
+				</button>
 			</span>
 			<span class="text-sm font-semibold {shownPrice == null ? 'text-muted' : ''}">
 				{shownPrice ?? '—'}
@@ -143,16 +149,20 @@
 				onclick={() => patch({ alter: !card.alter })}
 				class="border-accent rounded-md border px-2 py-1 text-sm {card.alter
 					? 'bg-accent text-accent-contrast'
-					: 'text-muted'}">Alter</button
+					: 'text-muted'}"
 			>
+				Alter
+			</button>
 			<button
 				type="button"
 				aria-pressed={card.proxy}
 				onclick={() => patch({ proxy: !card.proxy })}
 				class="border-accent rounded-md border px-2 py-1 text-sm {card.proxy
 					? 'bg-accent text-accent-contrast'
-					: 'text-muted'}">Proxy</button
+					: 'text-muted'}"
 			>
+				Proxy
+			</button>
 		</div>
 
 		<div

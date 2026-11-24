@@ -57,9 +57,9 @@
 		/>
 	</td>
 	<td class="max-w-[16rem] truncate px-2 py-1">{card.name}</td>
-	<td class="text-muted px-2 py-1 whitespace-nowrap"
-		>{card.set.toUpperCase()} · CN {card.collector_number}</td
-	>
+	<td class="text-muted px-2 py-1 whitespace-nowrap">
+		{card.set.toUpperCase()} · CN {card.collector_number}
+	</td>
 	<td class="px-2 py-1">
 		<select
 			value={card.selectedFinish}
@@ -95,22 +95,22 @@
 			{#each Object.entries(LANGUAGES) as [k, v] (k)}<option value={k}>{v}</option>{/each}
 		</select>
 	</td>
-	<td class="px-2 py-1 text-center"
-		><input
+	<td class="px-2 py-1 text-center">
+		<input
 			type="checkbox"
 			checked={card.alter}
 			onchange={() => patch({ alter: !card.alter })}
 			aria-label="Alter"
-		/></td
-	>
-	<td class="px-2 py-1 text-center"
-		><input
+		/>
+	</td>
+	<td class="px-2 py-1 text-center">
+		<input
 			type="checkbox"
 			checked={card.proxy}
 			onchange={() => patch({ proxy: !card.proxy })}
 			aria-label="Proxy"
-		/></td
-	>
+		/>
+	</td>
 	<td class="px-2 py-1">
 		<div
 			class="bg-surface-2 text-text ring-border flex w-24 items-center gap-1 rounded-md px-1 ring-1"
@@ -130,12 +130,14 @@
 			{#if affix.suffix}<span class="text-muted text-xs">{affix.suffix}</span>{/if}
 		</div>
 	</td>
-	<td class="px-2 py-1"
-		><button
+	<td class="px-2 py-1">
+		<button
 			type="button"
 			aria-label={`Remove ${card.name}`}
 			onclick={() => onremove?.(card.id)}
-			class="text-muted px-1 hover:text-red-400">✕</button
-		></td
-	>
+			class="text-muted px-1 hover:text-red-400"
+		>
+			✕
+		</button>
+	</td>
 </tr>

@@ -65,8 +65,10 @@
 			href="https://scryfall.com/docs/syntax"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="underline">Syntax guide ↗</a
+			class="underline"
 		>
+			Syntax guide ↗
+		</a>
 	</p>
 	<input
 		id="default-query"
@@ -82,9 +84,9 @@
 		bind:value={source}
 		class="bg-surface-2 text-text ring-border mb-5 w-full rounded-md px-3 py-2 ring-1"
 	>
-		{#each Object.entries(PRICE_SOURCES) as [k, v] (k)}<option value={k}
-				>{v.label} ({v.currency})</option
-			>{/each}
+		{#each Object.entries(PRICE_SOURCES) as [k, v] (k)}<option value={k}>
+				{v.label} ({v.currency})
+			</option>{/each}
 	</select>
 
 	<label class="mb-1 block text-sm font-medium" for="theme-select">Theme</label>

@@ -354,15 +354,19 @@
 								type="button"
 								onclick={() => (page = Math.max(1, page - 1))}
 								disabled={page === 1}
-								class="bg-accent/20 rounded-md px-3 py-1 disabled:opacity-50">Prev</button
+								class="bg-accent/20 rounded-md px-3 py-1 disabled:opacity-50"
 							>
+								Prev
+							</button>
 							<span class="text-muted">Page {page} of {totalPages}</span>
 							<button
 								type="button"
 								onclick={() => (page = Math.min(totalPages, page + 1))}
 								disabled={page === totalPages}
-								class="bg-accent/20 rounded-md px-3 py-1 disabled:opacity-50">Next</button
+								class="bg-accent/20 rounded-md px-3 py-1 disabled:opacity-50"
 							>
+								Next
+							</button>
 						</div>
 					{/if}
 				</div>
@@ -384,8 +388,9 @@
 				type="button"
 				onclick={() => (exportOpen = true)}
 				class="bg-accent text-accent-contrast mt-3 w-full rounded-md px-4 py-2 lg:hidden"
-				>Export</button
 			>
+				Export
+			</button>
 		</main>
 	{:else if isLoading}
 		<p class="text-muted mx-auto max-w-[1800px] p-6 text-center">Loading cards…</p>
@@ -414,8 +419,10 @@
 			href="https://www.kerakis.com"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="hover:text-text hover:underline">Kerakis © {new Date().getFullYear()}</a
+			class="hover:text-text hover:underline"
 		>
+			Kerakis © {new Date().getFullYear()}
+		</a>
 	</footer>
 
 	<SettingsDrawer

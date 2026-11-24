@@ -49,11 +49,14 @@
 				onclick={() => (showHistory = !showHistory)}
 				aria-label="Toggle search history"
 				class="text-muted hover:text-text absolute inset-y-0 right-0 px-3"
-				><span
-					class="inline-block transition-transform duration-200 {showHistory ? 'rotate-180' : ''}"
-					aria-hidden="true">▼</span
-				></button
 			>
+				<span
+					class="inline-block transition-transform duration-200 {showHistory ? 'rotate-180' : ''}"
+					aria-hidden="true"
+				>
+					▼
+				</span>
+			</button>
 
 			{#if showHistory && history.length > 0}
 				<ul
@@ -68,14 +71,18 @@
 								onclick={() => {
 									onpick?.(item);
 									showHistory = false;
-								}}>{item}</button
+								}}
 							>
+								{item}
+							</button>
 							<button
 								type="button"
 								aria-label={`Remove ${item}`}
 								class="text-muted px-3 py-2 hover:text-red-400"
-								onclick={() => onremovehistory?.(item)}>✕</button
+								onclick={() => onremovehistory?.(item)}
 							>
+								✕
+							</button>
 						</li>
 					{/each}
 					<li class="border-border border-t">
@@ -85,8 +92,10 @@
 							onclick={() => {
 								onclearhistory?.();
 								showHistory = false;
-							}}>Clear history</button
+							}}
 						>
+							Clear history
+						</button>
 					</li>
 				</ul>
 			{/if}

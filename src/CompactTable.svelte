@@ -30,9 +30,9 @@
 <div class="border-border overflow-auto rounded-md border">
 	<table class="text-text w-full text-left text-sm">
 		<thead class="bg-accent/15">
-			<tr
-				>{#each headers as h, i (i)}<th class="px-2 py-1 font-semibold">{h}</th>{/each}</tr
-			>
+			<tr>
+				{#each headers as h, i (i)}<th class="px-2 py-1 font-semibold">{h}</th>{/each}
+			</tr>
 		</thead>
 		<tbody>
 			{#each cards as card (card.id)}

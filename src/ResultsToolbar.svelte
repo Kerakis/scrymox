@@ -19,9 +19,9 @@
 
 <div class="border-border text-text flex flex-wrap items-center gap-3 border-b px-3 py-2 text-sm">
 	<span class="flex items-center gap-1.5">
-		<span class="bg-accent/20 rounded-md px-3 py-1"
-			>{totalCards} cards{selectedCount ? ` · ${selectedCount} selected` : ''}</span
-		>
+		<span class="bg-accent/20 rounded-md px-3 py-1">
+			{totalCards} cards{selectedCount ? ` · ${selectedCount} selected` : ''}
+		</span>
 		{#if defaultQuery.trim()}
 			<Tooltip text={`Your default query "${defaultQuery.trim()}" was added to this search.`}>
 				<button
@@ -47,9 +47,9 @@
 	<label class="flex items-center gap-1">
 		<span class="text-muted">Prices:</span>
 		<select bind:value={source} aria-label="Price source" class="bg-accent/20 rounded-md px-2 py-1">
-			{#each Object.entries(PRICE_SOURCES) as [k, v] (k)}<option value={k}
-					>{v.label} ({v.currency})</option
-				>{/each}
+			{#each Object.entries(PRICE_SOURCES) as [k, v] (k)}<option value={k}>
+					{v.label} ({v.currency})
+				</option>{/each}
 		</select>
 	</label>
 
@@ -63,14 +63,16 @@
 			aria-pressed={view === 'gallery'}
 			onclick={() => (view = 'gallery')}
 			class="px-3 py-1 {view === 'gallery' ? 'bg-accent text-accent-contrast' : 'text-muted'}"
-			>Gallery</button
 		>
+			Gallery
+		</button>
 		<button
 			type="button"
 			aria-pressed={view === 'compact'}
 			onclick={() => (view = 'compact')}
 			class="px-3 py-1 {view === 'compact' ? 'bg-accent text-accent-contrast' : 'text-muted'}"
-			>Compact</button
 		>
+			Compact
+		</button>
 	</div>
 </div>
